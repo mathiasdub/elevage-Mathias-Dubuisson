@@ -2,6 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from .models import Elevage
 
 
+def menu(request):
+    return render(request, "elevage/menu.html")
+
+
 def nouveau(request):
     return render(request, "elevage/nouveau.html")
 
