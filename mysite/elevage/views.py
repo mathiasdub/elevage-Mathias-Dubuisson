@@ -1,5 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Elevage
+from .forms import ElevageForm
 
 
 def menu(request):
@@ -7,7 +8,14 @@ def menu(request):
 
 
 def nouveau(request):
-    return render(request, "elevage/nouveau.html")
+    if request.method == 'POST':
+        form = ElevageForm(request.POST)
+        if form.is_valid():
+            elevage = form.save()
+            return redirect('elevage:elevage/', elevage_id=elevage.id)  
+    else:
+        form = ElevageForm()
+    return render(request, 'elevage/nouveau.html', {'form': form})
 
 
 def liste(request):

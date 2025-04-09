@@ -7,6 +7,13 @@
 
     <h1>créer un élevage :</h1>
 
+    <form action="{% url "elevage:nouveau"  %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Créer</button>
+    </form>
+
+    <br><br>
 
     <a href="{% url 'elevage:menu' %}">Retour au menu</a>
 </body>
