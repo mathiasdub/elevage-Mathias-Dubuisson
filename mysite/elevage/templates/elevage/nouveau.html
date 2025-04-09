@@ -9,8 +9,23 @@
 
     <form action="{% url "elevage:nouveau"  %}" method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Créer</button>
+    
+        <fieldset>
+            <legend>Informations de l'élevage</legend>
+            {{ elevage_form.as_p }}
+        </fieldset>
+    
+        <fieldset>
+            <legend>Individus initiaux</legend>
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <div class="individu-form">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </fieldset>
+    
+        <button type="submit">Créer l'élevage</button>
     </form>
 
     <br><br>

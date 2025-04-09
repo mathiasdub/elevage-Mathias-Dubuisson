@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Elevage
-from .forms import ElevageForm
+from .forms import ElevageForm, IndividuFormSet
 
 
 def menu(request):
@@ -9,13 +9,24 @@ def menu(request):
 
 def nouveau(request):
     if request.method == 'POST':
-        form = ElevageForm(request.POST)
-        if form.is_valid():
-            elevage = form.save()
-            return redirect('elevage:elevage/', elevage_id=elevage.id)  
+        elevage_form = ElevageForm(request.POST)
+        formset = IndividuFormSet(request.POST)
+
+        if elevage_form.is_valid() and formset.is_valid():
+            elevage = elevage_form.save()
+            individus = formset.save(commit=False)
+            for individu in individus:
+                individu.elevage = elevage
+                individu.save()
+            return redirect('elevage:liste')
     else:
-        form = ElevageForm()
-    return render(request, 'elevage/nouveau.html', {'form': form})
+        elevage_form = ElevageForm()
+        formset = IndividuFormSet()
+
+    return render(request, 'elevage/nouveau.html', {
+        'elevage_form': elevage_form,
+        'formset': formset,
+    })
 
 
 def liste(request):
