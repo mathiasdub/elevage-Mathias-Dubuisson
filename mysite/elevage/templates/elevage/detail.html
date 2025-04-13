@@ -1,11 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Détail d'un élevage</title>
+    <title>{{elevage.name}}</title>
 </head>
 <body>
 
-    <h1>détail d'un élevage :</h1>
+    <h1>Détail de l'élevage {{elevage.name}} :</h1>
 
+    <h2>Caractéristiques de l'élevage :</h2>
+
+    <ul>
+        <li> nombre de cages : {{elevage.nb_cages}}</li>
+        <li> quantité de nourriture : {{elevage.qt_nourriture}}</li>
+        <li> quantité d'argent : {{elevage.argent}}</li>
+    </ul>
+
+    <h2>Liste des individus :</h2>
+
+    <ul>
+        {% for lapin in elevage.individus.all %}
+            <li>
+                sexe : {{lapin.sexe}}, âge : {{lapin.age}}, état : {{lapin.etat}}
+            </li>        
+        {% endfor %}
+    </ul>
+
+    <br><br>
+
+    <a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a>
 </body>
 </html>
