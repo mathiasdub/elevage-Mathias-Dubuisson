@@ -30,7 +30,8 @@ def nouveau(request):
 
 
 def liste(request):
-    return render(request, "elevage/liste.html")
+    elevages = Elevage.objects.all()
+    return render(request, "elevage/liste.html", {"elevages" : elevages})
 
 
 def detail(request, elevage_id):

@@ -6,6 +6,13 @@
 <body>
 
     <h1>liste des élevages :</h1>
+    <ul>
+        {% for raising in elevages %}
+            <li>
+                <a href="{% url 'elevage:detail' raising.id %}"> {{raising.name}} </a> 
+            </li>
+        {% endfor %}
+    </ul>
 
         
     <a href="{% url 'elevage:menu' %}">Retour au menu</a>
