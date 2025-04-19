@@ -1,25 +1,18 @@
 from django import forms
-from django.forms import inlineformset_factory
 from .models import Elevage, Individu
-
+from django.forms import modelformset_factory
 
 class ElevageForm(forms.ModelForm):
     class Meta:
         model = Elevage
-        fields = ['name', 'nb_cages', 'qt_nourriture', 'argent']
+        fields = ['name', 'qt_nourriture', 'nb_cages', 'argent']
 
-
-class IndividuForm(forms.ModelForm):
+class LapinForm(forms.ModelForm):
     class Meta:
         model = Individu
-        fields = ['sexe', 'age', 'etat']
+        fields = ['age', 'sexe', 'etat']
 
+LapinFormSet = modelformset_factory(Individu, form=LapinForm, extra=3)  # On peut ajuster `extra`
 
-# Formset pour ajouter plusieurs individus à un élevage
-IndividuFormSet = inlineformset_factory(
-    Elevage,
-    Individu,
-    form=IndividuForm,
-    extra=3,             # nombre de lignes de formulaire affichées
-    can_delete=False     # on ne permet pas de supprimer dans la création
-)
+class ChoixNombreLapinsForm(forms.Form):
+    nombre_lapins = forms.IntegerField(label="Nombre de lapins", min_value=1, max_value=50)

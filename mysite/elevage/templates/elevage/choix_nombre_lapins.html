@@ -1,0 +1,10 @@
+<h2>Combien de lapins initialemment dans l'élevage ?</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Continuer</button>
+
+    <br><br>
+
+    <a href="{% url 'elevage:menu' %}">Retour au menu</a>
+</form>

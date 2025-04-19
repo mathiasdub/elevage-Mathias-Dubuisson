@@ -5,25 +5,21 @@
 </head>
 <body>
 
-    <h1>créer un élevage :</h1>
+    <h1>Créer un élevage :</h1>
 
-    <form action="{% url "elevage:nouveau"  %}" method="post">
+    <form method="post">
         {% csrf_token %}
     
-        <fieldset>
-            <legend>Informations de l'élevage</legend>
-            {{ elevage_form.as_p }}
-        </fieldset>
+        <h2>Données de l'élevage</h2>
+        {{ elevage_form.as_p }}
     
-        <fieldset>
-            <legend>Individus initiaux</legend>
-            {{ formset.management_form }}
-            {% for form in formset %}
-                <div class="individu-form">
-                    {{ form.as_p }}
-                </div>
-            {% endfor %}
-        </fieldset>
+        <h2>Lapins initiaux</h2>
+        {{ lapin_formset.management_form }}
+        {% for form in lapin_formset %}
+            <fieldset>
+                {{ form.as_p }}
+            </fieldset>
+        {% endfor %}
     
         <button type="submit">Créer l'élevage</button>
     </form>
