@@ -5,28 +5,34 @@
 </head>
 <body>
 
-    <h1>Détail de l'élevage {{elevage.name}} :</h1>
-
-    <h2>Caractéristiques de l'élevage :</h2>
+    <h1>Détail de l'élevage : {{ elevage.name }}</h1>
 
     <ul>
-        <li> nombre de cages : {{elevage.nb_cages}}</li>
-        <li> quantité de nourriture : {{elevage.qt_nourriture}}</li>
-        <li> quantité d'argent : {{elevage.argent}}</li>
+    <li><strong>Argent :</strong> {{ elevage.argent }} €</li>
+    <li><strong>Nourriture :</strong> {{ elevage.qt_nourriture }} kg</li>
+    <li><strong>Nombre de cages :</strong> {{ elevage.nb_cages }}</li>
+    <li><strong>Nombre de lapins :</strong> {{ elevage.individus.count }}</li>
     </ul>
 
-    <h2>Liste des individus :</h2>
-
+    <h3>Lapins actuels :</h3>
     <ul>
-        {% for lapin in elevage.individus.all %}
-            <li>
-                sexe : {{lapin.sexe}}, âge : {{lapin.age}}, état : {{lapin.etat}}
-            </li>        
+        {% for lapin in lapins %}
+            <li>sexe : {{ lapin.sexe }}, âge : {{ lapin.age }} mois, état : {{ lapin.etat }}</li>
         {% endfor %}
     </ul>
-
+    
     <br><br>
 
+    <h2>Actions du tour</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Valider le tour</button>
+    </form>
+
+
+
+    <br><br>
     <a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a>
 </body>
 </html>
