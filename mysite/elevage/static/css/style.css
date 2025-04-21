@@ -1,0 +1,16 @@
+a {
+    color: #0b6623; 
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #0b6623; 
+    text-decoration: underline;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #fefefe;
+    color: #333;
+}
