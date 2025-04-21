@@ -96,6 +96,8 @@ def liste_regle(request):
         'AGE_MATURITE_GRAVIDITE': Regle.AGE_MATURITE_GRAVIDITE,
         'AGE_MAX_GRAVIDITE': Regle.AGE_MAX_GRAVIDITE,
         'DUREE_GESTATION': Regle.DUREE_GESTATION,
+        'DUREE_MAX_VIE' : Regle.DUREE_VIE_MAX,
+        'PROBA_MORT_VIEUX' : Regle.PROBA_MORT_VIEUX,
     }
     return render(request, 'elevage/liste_regle.html', {'regles': regles})
 

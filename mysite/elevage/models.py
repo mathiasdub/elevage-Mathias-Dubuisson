@@ -32,11 +32,13 @@ class Elevage(models.Model):
             lapin.save()
 
         #----- Reproduction -----#
-        # Récupération des femelles fécondables et des femelles gravides
+        # Récupération des femelles fécondables / femelles gravides / femelles adultes
         femelles = self.individus.filter(sexe='f', age__gte=Regle.AGE_MATURITE_GRAVIDITE, age__lte=Regle.AGE_MAX_GRAVIDITE, etat='présent')
         femelles_gravides = self.individus.filter(etat='gravide')
+        femelles_adultes = self.individus.filter(sexe='f', age__gte=3)
         # Mâles adultes
         males = self.individus.filter(sexe='m', age__gte=3)  
+
 
         # Accouchement des femelles gravides
         for femelle in femelles_gravides:
@@ -62,7 +64,9 @@ class Elevage(models.Model):
         morts_par_faim = []
 
         for lapin in self.individus.all():
-            if lapin.age == 0:
+            if lapin.age == 0 and not femelles_adultes.exists():
+                morts_par_faim.append(lapin)    # aucune femelle pour nourrir le jeune lapin
+            elif lapin.age == 0:
                 conso = 0  # Lait maternel
             elif lapin.age == 1:
                 conso = Regle.CONSOMMATION_MOIS_2 * 30
@@ -87,6 +91,15 @@ class Elevage(models.Model):
             for lapin in morts:
                 lapin.etat = "mort"
                 lapin.save()
+        
+        #----- Gestion des morts par vieillesse -----#
+        lapins_restants = self.individus.filter(etat__in=['présent', 'gravide'], age__gte=Regle.DUREE_VIE_MAX)
+        for lapin in lapins_restants:
+            if random.random() < Regle.PROBA_MORT_VIEUX:
+                lapin.etat = "mort"
+                lapin.save()
+            
+                
 
         self.save()  # Sauvegarde finale des données
 
@@ -120,9 +133,9 @@ class Individu(models.Model):
 # Classe contenant toutes les règles du jeu 
 class Regle:
     # Économie
-    PRIX_NOURRITURE_PAR_KG = 1.0        # €/kg
-    PRIX_CAGE = 20.0                    # €
-    PRIX_VENTE_LAPIN = 50.0             # €
+    PRIX_NOURRITURE_PAR_KG = 5.0        # €/kg
+    PRIX_CAGE = 120.0                   # €
+    PRIX_VENTE_LAPIN = 65.0             # €
 
     # Nourriture (en kg par jour selon l’âge)
     CONSOMMATION_MOIS_1 = 0            
@@ -138,3 +151,7 @@ class Regle:
     AGE_MATURITE_GRAVIDITE = 6         # Âge minimum pour reproduction
     AGE_MAX_GRAVIDITE = 48             # Âge maximum pour reproduction
     DUREE_GESTATION = 1                # Durée de la gestation en mois
+    
+    # Mort par vieillesse
+    DUREE_VIE_MAX = 96                 # Âge à partir duquel le lapin peut mourir de viellesse 
+    PROBA_MORT_VIEUX = 0.1             # Proba du lapin de mourir de vieillesse une fois l'âge requis dépassé
