@@ -49,7 +49,7 @@ class LapinForm(forms.ModelForm):
 
 # Formulaire demandant à l'utilisateur combien de lapins il souhaite créer
 class ChoixNombreLapinsForm(forms.Form):
-    nombre_lapins = forms.IntegerField(label="Nombre de lapins", min_value=0, max_value=50)
+    nombre_lapins = forms.IntegerField(label="Nombre de lapins initiaux", min_value=0, max_value=50)
 
 
 # Formulaire des actions que l’on peut faire à chaque tour de jeu
