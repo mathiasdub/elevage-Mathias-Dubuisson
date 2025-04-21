@@ -1,17 +1,19 @@
 {% extends "elevage/base.html" %}
 
-{% block title %}Menu principal{% endblock %}
+{% block title %}Liste des élevages{% endblock %}
 
 {% block content %}
 
 <h1>liste des élevages :</h1>
-<ul>
+<div class="list">
     {% for raising in elevages %}
-        <li>
-            <a href="{% url 'elevage:detail' raising.id %}"> {{raising.name}} </a> 
-        </li>
+        <div class="elevage-item">
+            <a href="{% url 'elevage:detail' raising.id %}" class="elevage-link">
+                <span class="elevage-name">{{ raising.name }}</span>
+            </a>
+        </div>
     {% endfor %}
-</ul>
+</div>
 
     
 <br><br>

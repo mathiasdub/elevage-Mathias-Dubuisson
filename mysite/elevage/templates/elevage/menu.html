@@ -5,10 +5,11 @@
 {% block content %}
 <h1>Menu principal :</h1>
 
-<nav>
-    <a href="{% url 'elevage:nouveau' %}">Nouvel élevage</a> |
-    <a href="{% url 'elevage:liste' %}">Voir tous les élevages</a> |
-    <a href="{% url 'elevage:regles' %}">Voir les règles du jeu</a> 
-</nav>
+<div class="list">
+    <a href="{% url 'elevage:nouveau' %}" class="menu-button">Nouvel Elevage</a> 
+    <a href="{% url 'elevage:liste' %}" class="menu-button">Voir tous les Elevages</a> 
+    <a href="{% url 'elevage:regles' %}" class="menu-button">Voir les règles du jeu</a> 
+</div>
 
+<br><br><br>
 {% endblock %}

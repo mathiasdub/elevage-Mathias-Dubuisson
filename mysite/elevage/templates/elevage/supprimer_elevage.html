@@ -1,17 +1,19 @@
 {% extends "elevage/base.html" %}
 
-{% block title %}Menu principal{% endblock %}
+{% block title %}Supprimer {{ elevage.name }} ?{% endblock %}
 
 {% block content %}
 <h1>Confirmer la suppression de l'élevage : {{ elevage.name }}</h1>
 
     <p>Êtes-vous sûr de vouloir supprimer cet élevage ? Cette action est irréversible.</p>
 
-    <form method="post">
+    <form method="post" style="all: unset;">
         {% csrf_token %}
-        <button type="submit" style="all: unset; color: blue; text-decoration: underline; cursor: pointer;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet élevage ?')">Confirmer</button>
+        <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet élevage ?')">Confirmer</button>
     </form>
 
-    <a href="{% url 'elevage:liste' %}">Annuler</a>
+    <a href="{% url 'elevage:detail' elevage.id %}"><button>Annuler</button></a>
+
+    <br><br>
 
 {% endblock %}

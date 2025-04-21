@@ -1,16 +1,174 @@
-a {
-    color: #0b6623; 
-    text-decoration: underline;
-}
-
-a:visited {
-    color: #0b6623; 
-    text-decoration: underline;
-}
-
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #fefefe;
-    color: #333;
+    font-family: 'Share Tech Mono', monospace;
+    background-color: #000;        
+    color: #00ff00;                 
+    margin: 0;
+    padding: 20px;
 }
+
+
+a {
+    font-size: 1.5rem;               
+    text-decoration: none;
+    color: #2ecc71;                  
+}
+a:visited {
+    font-size: 1.5rem;               
+    text-decoration: none;
+    color: #2ecc71;                  
+}
+
+
+/*----- menu -----*/
+.menu-button {
+    background-color: #111;
+    color: #00ff00;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    padding: 15px 30px;
+    text-decoration: none;
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+}
+.menu-button:hover {
+    background-color: #00ff00;
+    color: #111;
+    transform: scale(1.1); 
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+}
+.menu-button:active {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+
+/*----- forms -----*/
+form {
+    background-color: #111;
+    padding: 20px;
+    border: 2px solid #00ff00;
+    border-radius: 8px;
+    font-size: 12px;
+    max-width: 600px;
+    margin: 20px auto;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #00ff00;
+    font-weight: bold;
+}
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: #000;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+input[type="submit"],
+button {
+    color: #00ff00;
+    background-color: #1a1a1a;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s ease;
+}
+input[type="submit"]:hover,
+button:hover {
+    background-color: #00ff00;
+    color: #1a1a1a;
+    box-shadow: 0 0 20px #00ff00;
+}
+input[type="checkbox"]{
+    transform: scale(1.3);
+    margin-right: 10px;
+    accent-color: #00ff00;
+    color: #1a1a1a
+}
+
+
+fieldset {
+    border: 2px solid #00ff00;
+    padding: 15px 20px;
+    margin: 20px auto;
+    background-color: #111;
+    font-family: 'Press Start 2P', monospace;
+    color: #00ff00;
+    max-width: 90%;
+}
+
+
+/*----- listes -----*/
+.list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+.elevage-item {
+    background-color: #111;
+    border: 2px solid #00ff00;
+    padding: 15px;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: #00ff00;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.elevage-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #00ff00;
+}
+.elevage-link {
+    color: inherit;
+    text-decoration: none;
+}
+.elevage-name {
+    display: inline-block;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+.elevage-link:hover .elevage-name {
+    text-decoration: underline;
+    color: #00ff00;
+}
+
+
+/*----- suppression elevage-----*/
+.bouton-lien {
+    display: inline-block;
+    font-family: 'VT323', monospace;
+    font-size: 1.5rem;
+    text-decoration: none;
+    color: #2ecc71;
+    background-color: transparent;
+    border: 2px solid #2ecc71;
+    padding: 8px 16px;
+    margin: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.bouton-lien:hover {
+    transform: scale(1.1);
+}
+
