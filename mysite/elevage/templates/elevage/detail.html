@@ -5,7 +5,8 @@
 </head>
 <body>
 
-    <h1>Détail de l'élevage : {{ elevage.name }}</h1>
+    <fieldset>
+    <legend><h1>Détail de l'élevage : {{ elevage.name }}</h1></legend>
 
     <ul>
     <li><strong>Argent :</strong> {{ elevage.argent }} €</li>
@@ -22,22 +23,24 @@
             {% endif %}
         {% endfor %}
     </ul>
+    </fieldset>
     
     <br><br>
 
 
-
-    <h1>Actions du tour</h1>
+    <fieldset>
+    <legend><h1>Actions du tour</h1></legend>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Valider le tour</button>
     </form>
-
+    </fieldset>
 
 
     <br><br>
     <p><a href="{% url 'elevage:regles' %}" target="_blank">Voir la liste des règles</a></p>
-    <a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a>
+    <p><a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a></p>
+    <p><a href="{% url 'elevage:supprimer' elevage.id %}">Supprimer cet élevage</a></p>
 </body>
 </html>

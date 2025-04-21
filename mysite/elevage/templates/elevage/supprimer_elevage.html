@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirmation de suppression</title>
+</head>
+<body>
+
+    <h1>Confirmer la suppression de l'élevage : {{ elevage.name }}</h1>
+
+    <p>Êtes-vous sûr de vouloir supprimer cet élevage ? Cette action est irréversible.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" style="all: unset; color: blue; text-decoration: underline; cursor: pointer;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet élevage ?')">Confirmer</button>
+    </form>
+
+    <a href="{% url 'elevage:liste' %}">Annuler</a>
+
+</body>
+</html>
+
