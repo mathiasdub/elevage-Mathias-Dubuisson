@@ -7,6 +7,12 @@ class ElevageForm(forms.ModelForm):
     class Meta:
         model = Elevage  
         fields = ['name', 'qt_nourriture', 'nb_cages', 'argent']  # Champs à afficher dans le formulaire
+        labels = {
+            'qt_nourriture': 'Quantité de nourriture (kg)',
+            'nb_cages': 'Nombre de cages',
+            'argent': 'Argent (€)',
+            'name': 'Nom de l’élevage',
+        }
 
 
 # Formulaire de création d'un lapin 
@@ -14,6 +20,31 @@ class LapinForm(forms.ModelForm):
     class Meta:
         model = Individu  
         fields = ['age', 'sexe', 'etat']  # Champs à afficher dans le formulaire
+        labels = {
+            'age': 'Âge (en mois)',
+            'sexe': 'Sexe',
+            'etat': 'État',
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        sexe = cleaned_data.get("sexe")
+        etat = cleaned_data.get("etat")
+        age = cleaned_data.get("age")
+
+        # on ne peut pas créer à la fois un lapin mâle et gravide
+        if sexe == 'm' and etat == 'gravide':
+            raise forms.ValidationError("Un lapin mâle ne peut pas être en état gravide.")
+        if sexe =='f' and etat =='gravide' and (age < 3 or age > 48):
+            raise forms.ValidationError("Un lapin femelle ne peut pas être en état gravide avec cet âge là.")
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # On limite les choix d’état à "présent" et "gravide" uniquement
+        self.fields['etat'].choices = [
+            ('présent', 'Présent'),
+            ('gravide', 'Gravide'),
+        ]
 
 
 # Formulaire demandant à l'utilisateur combien de lapins il souhaite créer

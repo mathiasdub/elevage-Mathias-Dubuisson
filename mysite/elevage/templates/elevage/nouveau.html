@@ -10,20 +10,22 @@
     
         <fieldset>
             <legend><h2>Données de l'élevage</h2></legend>
-            <p>Quantité de nourriture en kg et Argent en €</p>
-            {{ elevage_form.as_p }}
+            <table>
+                {{ elevage_form.as_table }}
+            </table>
         </fieldset>
 
 
         <fieldset>
             <legend><h2>Lapins initiaux</h2></legend>
-            <p>âge en mois</p>
 
         {{ lapin_formset.management_form }}
 
         {% for form in lapin_formset %}
             <fieldset>
-                {{ form.as_p }}
+                <table>
+                    {{ form.as_table }}
+                </table>
             </fieldset>
         {% endfor %}
         </fieldset>

@@ -1,6 +1,6 @@
 {% extends "elevage/base.html" %}
 
-{% block title %}Menu principal{% endblock %}
+{% block title %} {{ elevage.name }} {% endblock %}
 
 {% block content %}
 <fieldset>
@@ -30,7 +30,9 @@
     <legend><h1>Actions du tour</h1></legend>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <table>
+            {{ form.as_table }}
+        </table>
         <button type="submit">Valider le tour</button>
     </form>
     </fieldset>
