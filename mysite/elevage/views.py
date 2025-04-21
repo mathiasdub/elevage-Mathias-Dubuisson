@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Elevage, Individu
+from .models import Elevage, Individu, Regle
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
 
@@ -51,42 +51,45 @@ def liste(request):
 
 def detail(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)
-    lapins = elevage.individus.all()
+    lapins = elevage.individus.filter(etat__in=['présent', 'gravide'])
     
     if request.method == 'POST':
         form = ActionsForm(request.POST, elevage=elevage)
+        form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
         if form.is_valid():
             lapins_vendus = form.cleaned_data['lapins_a_vendre']
             nourriture = form.cleaned_data['nourriture_achetee']
             cages = form.cleaned_data['cages_achetees']
-
-            prix_nourriture_unitaire = 1  # €/kg
-            prix_cage = 50.0    # € par cage
-            prix_lapin = 100.0  # € reçu par lapin vendu
-
-            revenu = len(lapins_vendus) * prix_lapin
-            coût_total = (nourriture * prix_nourriture_unitaire) + (cages * prix_cage)
-            argent_disponible = elevage.argent + revenu
-
-            if coût_total > argent_disponible:
-                form.add_error(None, "Vous ne pouvez pas acheter autant avec les ressources actuelles.")
-            else:
-                # Mise à jour de l’élevage
-                elevage.qt_nourriture += nourriture
-                elevage.nb_cages += cages
-                elevage.argent = argent_disponible - coût_total
-                elevage.save()
-
-                # Suppression des lapins vendus
-                for lapin in lapins_vendus:
-                    lapin.delete()
-
-                return redirect('elevage:detail', elevage_id=elevage.id)
+            
+            elevage.avancer_tour(nourriture, cages, lapins_vendus)
     else:
         form = ActionsForm(elevage=elevage)
+        form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
+
 
     return render(request, 'elevage/detail.html', {
         'elevage': elevage,
         'lapins': lapins,
         'form': form,
+        'nombre_lapins': lapins.count(),
     })
+    
+    
+def liste_regle(request):
+    regles = {
+        'PRIX_NOURRITURE_PAR_KG': Regle.PRIX_NOURRITURE_PAR_KG,
+        'PRIX_CAGE': Regle.PRIX_CAGE,
+        'PRIX_VENTE_LAPIN': Regle.PRIX_VENTE_LAPIN,
+        'CONSOMMATION_MOIS_1': Regle.CONSOMMATION_MOIS_1,
+        'CONSOMMATION_MOIS_2': Regle.CONSOMMATION_MOIS_2,
+        'CONSOMMATION_MOIS_3_ET_PLUS': Regle.CONSOMMATION_MOIS_3_ET_PLUS,
+        'PORTEE_MAX': Regle.PORTEE_MAX,
+        'PROBA_REPRO': Regle.PROBA_REPRO,
+        'INDIVIDUS_PAR_CAGE_MAX': Regle.INDIVIDUS_PAR_CAGE_MAX,
+        'INDIVIDUS_PAR_CAGE_SURPOP': Regle.INDIVIDUS_PAR_CAGE_SURPOP,
+        'AGE_MATURITE_GRAVIDITE': Regle.AGE_MATURITE_GRAVIDITE,
+        'AGE_MAX_GRAVIDITE': Regle.AGE_MAX_GRAVIDITE,
+        'DUREE_GESTATION': Regle.DUREE_GESTATION,
+    }
+    
+    return render(request, 'elevage/liste_regle.html', {'regles': regles})

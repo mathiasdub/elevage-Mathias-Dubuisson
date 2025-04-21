@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Règles</title>
+</head>
+<body>
+
+    <h1>Règles pour les élevages de lapins :</h1>
+
+    <h2>Economie :</h2>
+    <ul>
+        <li><strong>Prix de la nourriture par kg :</strong> {{ regles.PRIX_NOURRITURE_PAR_KG }} €</li>
+        <li><strong>Prix d'une cage :</strong> {{ regles.PRIX_CAGE }} €</li>
+        <li><strong>Prix de vente d'un lapin :</strong> {{ regles.PRIX_VENTE_LAPIN }} €</li>
+    </ul>
+
+    <h2>Nourriture :</h2>
+    <ul>   
+        <li><strong>Consommation de nourriture pour un lapin (mois 1) :</strong> {{ regles.CONSOMMATION_MOIS_1 }} kg/jour</li>
+        <li><strong>Consommation de nourriture pour un lapin (mois 2) :</strong> {{ regles.CONSOMMATION_MOIS_2 }} kg/jour</li>
+        <li><strong>Consommation de nourriture pour un lapin (mois 3 et plus) :</strong> {{ regles.CONSOMMATION_MOIS_3_ET_PLUS }} kg/jour</li>
+    </ul>
+
+    <h2>Reproduction :</h2>
+    <ul>
+        <li><strong>Nombre maximum de lapereaux par portée :</strong> {{ regles.PORTEE_MAX }}</li>
+        <li><strong>Probabilité de reproduction :</strong> {{ regles.PROBA_REPRO }}</li>
+        <li><strong>Âge minimum pour être gravide :</strong> {{ regles.AGE_MATURITE_GRAVIDITE }} mois</li>
+        <li><strong>Âge maximum pour être gravide :</strong> {{ regles.AGE_MAX_GRAVIDITE }} mois</li>
+        <li><strong>Durée de gestation :</strong> {{ regles.DUREE_GESTATION }} mois</li>
+    </ul>
+
+    <h2>Surpopulation :</h2>
+    <ul>
+        <li><strong>Nombre maximum d'individus par cage :</strong> {{ regles.INDIVIDUS_PAR_CAGE_MAX }}</li>
+        <li><strong>Nombre maximum d'individus en surpopulation par cage :</strong> {{ regles.INDIVIDUS_PAR_CAGE_SURPOP }}</li>
+
+    </ul>
+
+    <br><br>
+    <a href="{% url 'elevage:menu' %}">Retour au menu</a>
+
+</body>
+</html>

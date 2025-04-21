@@ -11,19 +11,23 @@
     <li><strong>Argent :</strong> {{ elevage.argent }} €</li>
     <li><strong>Nourriture :</strong> {{ elevage.qt_nourriture }} kg</li>
     <li><strong>Nombre de cages :</strong> {{ elevage.nb_cages }}</li>
-    <li><strong>Nombre de lapins :</strong> {{ elevage.individus.count }}</li>
+    <li><strong>Nombre de lapins :</strong> {{ nombre_lapins }}</li>
     </ul>
 
     <h3>Lapins actuels :</h3>
     <ul>
         {% for lapin in lapins %}
-            <li>sexe : {{ lapin.sexe }}, âge : {{ lapin.age }} mois, état : {{ lapin.etat }}</li>
+            {% if lapin.etat == "présent" or lapin.etat == "gravide" %}
+                <li>{{ lapin }}</li>
+            {% endif %}
         {% endfor %}
     </ul>
     
     <br><br>
 
-    <h2>Actions du tour</h2>
+
+
+    <h1>Actions du tour</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
@@ -33,6 +37,7 @@
 
 
     <br><br>
+    <p><a href="{% url 'elevage:regles' %}" target="_blank">Voir la liste des règles</a></p>
     <a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a>
 </body>
 </html>

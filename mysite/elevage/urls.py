@@ -8,4 +8,5 @@ urlpatterns = [
     path("nouveau/", views.nouveau, name="nouveau"),
     path("liste/", views.liste, name="liste"),
     path("elevage/<int:elevage_id>/", views.detail, name="detail"),
+    path("regles", views.liste_regle, name="regles"),
 ]
