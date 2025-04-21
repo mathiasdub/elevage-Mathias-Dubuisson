@@ -1,31 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Création d'un élevage</title>
-</head>
-<body>
+{% extends "elevage/base.html" %}
 
-    <h1>Créer un élevage :</h1>
+{% block title %}Nouvel élevage{% endblock %}
+
+{% block content %}
+<h1>Créer un élevage :</h1>
 
     <form method="post">
         {% csrf_token %}
     
-        <h2>Données de l'élevage</h2>
-        {{ elevage_form.as_p }}
-    
-        <h2>Lapins initiaux</h2>
+        <fieldset>
+            <legend><h2>Données de l'élevage</h2></legend>
+            <p>Quantité de nourriture en kg et Argent en €</p>
+            {{ elevage_form.as_p }}
+        </fieldset>
+
+
+        <fieldset>
+            <legend><h2>Lapins initiaux</h2></legend>
+            <p>âge en mois</p>
+
         {{ lapin_formset.management_form }}
+
         {% for form in lapin_formset %}
             <fieldset>
                 {{ form.as_p }}
             </fieldset>
         {% endfor %}
-    
+        </fieldset>
+
         <button type="submit">Créer l'élevage</button>
     </form>
-
+        
     <br><br>
-
     <a href="{% url 'elevage:menu' %}">Retour au menu</a>
-</body>
-</html>
+
+{% endblock %}

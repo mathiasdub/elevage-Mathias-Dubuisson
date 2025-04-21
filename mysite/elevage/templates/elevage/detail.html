@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{elevage.name}}</title>
-</head>
-<body>
+{% extends "elevage/base.html" %}
 
-    <fieldset>
+{% block title %}Menu principal{% endblock %}
+
+{% block content %}
+<fieldset>
     <legend><h1>Détail de l'élevage : {{ elevage.name }}</h1></legend>
 
     <ul>
@@ -42,5 +40,5 @@
     <p><a href="{% url 'elevage:regles' %}" target="_blank">Voir la liste des règles</a></p>
     <p><a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a></p>
     <p><a href="{% url 'elevage:supprimer' elevage.id %}">Supprimer cet élevage</a></p>
-</body>
-</html>
+
+{% endblock %}

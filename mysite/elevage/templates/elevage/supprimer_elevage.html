@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Confirmation de suppression</title>
-</head>
-<body>
+{% extends "elevage/base.html" %}
 
-    <h1>Confirmer la suppression de l'élevage : {{ elevage.name }}</h1>
+{% block title %}Menu principal{% endblock %}
+
+{% block content %}
+<h1>Confirmer la suppression de l'élevage : {{ elevage.name }}</h1>
 
     <p>Êtes-vous sûr de vouloir supprimer cet élevage ? Cette action est irréversible.</p>
 
@@ -16,6 +14,4 @@
 
     <a href="{% url 'elevage:liste' %}">Annuler</a>
 
-</body>
-</html>
-
+{% endblock %}

@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Règles</title>
-</head>
-<body>
+{% extends "elevage/base.html" %}
 
-    <h1>Règles pour les élevages de lapins :</h1>
+{% block title %}Menu principal{% endblock %}
+
+{% block content %}
+<h1>Règles pour les élevages de lapins :</h1>
 
     <h2>Economie :</h2>
     <ul>
@@ -40,5 +38,4 @@
     <br><br>
     <a href="{% url 'elevage:menu' %}">Retour au menu</a>
 
-</body>
-</html>
+{% endblock %}

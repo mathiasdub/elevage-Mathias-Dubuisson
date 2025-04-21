@@ -1,17 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Menu principal</title>
-</head>
-<body>
+{% extends "elevage/base.html" %}
 
-    <h1>Menu principal :</h1>
+{% block title %}Menu principal{% endblock %}
 
-    <ul>
-        <li><a href="{% url 'elevage:nouveau' %}">Créer un nouvel élevage</a></li>
-        <li><a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a></li>
-        <li><a href="{% url 'elevage:regles' %}">Voir la liste des règles</a></li>
-    </ul>
+{% block content %}
+<h1>Menu principal :</h1>
 
-</body>
-</html>
+<nav>
+    <a href="{% url 'elevage:nouveau' %}">Nouvel élevage</a> |
+    <a href="{% url 'elevage:liste' %}">Voir tous les élevages</a> |
+    <a href="{% url 'elevage:regles' %}">Voir les règles du jeu</a> 
+</nav>
+
+{% endblock %}

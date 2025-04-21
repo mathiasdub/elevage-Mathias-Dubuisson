@@ -1,22 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Liste des évelages</title>
-</head>
-<body>
+{% extends "elevage/base.html" %}
 
-    <h1>liste des élevages :</h1>
-    <ul>
-        {% for raising in elevages %}
-            <li>
-                <a href="{% url 'elevage:detail' raising.id %}"> {{raising.name}} </a> 
-            </li>
-        {% endfor %}
-    </ul>
+{% block title %}Menu principal{% endblock %}
 
-        
-    <br><br>
+{% block content %}
 
-    <a href="{% url 'elevage:menu' %}">Retour au menu</a>
-</body>
-</html>
+<h1>liste des élevages :</h1>
+<ul>
+    {% for raising in elevages %}
+        <li>
+            <a href="{% url 'elevage:detail' raising.id %}"> {{raising.name}} </a> 
+        </li>
+    {% endfor %}
+</ul>
+
+    
+<br><br>
+
+<a href="{% url 'elevage:menu' %}">Retour au menu</a>
+
+{% endblock %}
