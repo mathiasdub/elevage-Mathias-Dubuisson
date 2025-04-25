@@ -3,6 +3,7 @@
 {% block title %} {{ elevage.name }} {% endblock %}
 
 {% block content %}
+
 <fieldset>
     <legend><h1>Détail de l'élevage : {{ elevage.name }}</h1></legend>
 
@@ -21,10 +22,46 @@
             {% endif %}
         {% endfor %}
     </ul>
-    </fieldset>
+</fieldset>
     
     <br><br>
 
+    
+    <h1> Graphiques représentant l'élevage :</h1>
+    
+<canvas id="populationChart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+   fetch("/datas/{{ elevage.id }}/")
+  .then(response => response.json())
+  .then(data => {
+    const labels = data.map(entry => `Tour ${entry.tour}`);
+    const males = data.map(entry => entry.nb_males);
+    const femelles = data.map(entry => entry.nb_femelles);
+    const lapereaux = data.map(entry => entry.nb_lapereaux);
+
+    new Chart(document.getElementById('populationChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Mâles', data: males, borderColor: 'blue' },
+          { label: 'Femelles', data: femelles, borderColor: 'pink' },
+          { label: 'Lapereaux', data: lapereaux, borderColor: 'green' }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  });
+</script>
+
+    
+    <br><br>
 
     <fieldset>
     <legend><h1>Actions du tour</h1></legend>
