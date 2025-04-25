@@ -8,7 +8,7 @@ class Elevage(models.Model):
     nb_cages = models.PositiveIntegerField()                # Nombre de cages disponibles
     qt_nourriture = models.PositiveIntegerField()           # Quantité de nourriture (en kg)
     argent = models.PositiveIntegerField()                  # Argent disponible (en €)
-    tour = models.PositiveIntegerField(default=0)           # Tour actuel
+    #tour = models.PositiveIntegerField(default=0)           # Tour actuel
 
     # Fonction appelée à chaque tour pour mettre à jour l’état de l’élevage
     def avancer_tour(self, nourriture_achetee, cages_achetees, lapins_vendus):
@@ -20,7 +20,7 @@ class Elevage(models.Model):
             cages_achetees * Regle.PRIX_CAGE
         )
         self.argent += len(lapins_vendus) * Regle.PRIX_VENTE_LAPIN
-        self.tour += 1  # Incrémente le tour
+        #self.tour += 1  # Incrémente le tour
 
         # Marque les lapins vendus comme vendus
         for lapin in lapins_vendus:
@@ -111,11 +111,11 @@ class Elevage(models.Model):
         #----- Ajout des données du tour dans l'historique des états de l'élevage -----#
         ElevageDatas.objects.create(
             elevage=self,
-            tour=self.tour,
+            #tour=self.tour,
             
-            nb_males=self.self.individus.filter(sexe='m').count(),
-            nb_femelles=self.self.individus.filter(sexe='f').count(),
-            nb_lapereaux=self.self.individus.filter(age__lte = 2).count(),
+            nb_males=self.individus.filter(sexe='m').count(),
+            nb_femelles=self.individus.filter(sexe='f').count(),
+            nb_lapereaux=self.individus.filter(age__lte = 2).count(),
             
             naissances=nb_naissances,
             morts=len(morts),
@@ -182,7 +182,7 @@ class Regle:
 
 
 # Classe stockant l'historique des états d'un élevage
-class ElevageDatas(models.Modelm):
+class ElevageDatas(models.Model):
     # élevage
     elevage = models.ForeignKey(Elevage, on_delete=models.CASCADE)
     tour = models.IntegerField()
