@@ -155,3 +155,9 @@ class Regle:
     # Mort par vieillesse
     DUREE_VIE_MAX = 96                 # Âge à partir duquel le lapin peut mourir de viellesse 
     PROBA_MORT_VIEUX = 0.1             # Proba du lapin de mourir de vieillesse une fois l'âge requis dépassé
+
+class Sante(models.Model):
+    individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante')
+    niveau_sante = models.IntegerField(default=100)
+    maladies = models.TextField(blank=True, null=True)
+    dernier_checkup = models.DateField(auto_now=True)
