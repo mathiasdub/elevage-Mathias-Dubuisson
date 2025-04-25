@@ -1,5 +1,9 @@
-from django.urls import path
+from django.urls import path,include
 from . import views
+
+from django.contrib.auth import views as auth_views
+
+
 
 
 app_name = "elevage"
@@ -10,4 +14,5 @@ urlpatterns = [
     path("elevage/<int:elevage_id>/", views.detail, name="detail"),
     path("regles", views.liste_regle, name="regles"),
     path("elevage/<int:elevage_id>/supprimer", views.supprimer_elevage, name="supprimer"),
+    path('accounts/', include('django.contrib.auth.urls'))
 ]

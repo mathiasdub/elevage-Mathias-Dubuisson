@@ -2,14 +2,29 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Elevage, Individu, Regle
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 
 
-# Vue du menu principal
+
+"""def home_view(request):
+    return render(request, 'elevage/home.html')
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})"""
+
+@login_required
 def menu(request):
     return render(request, "elevage/menu.html")  # Affiche la page d’accueil du jeu
 
-
 # Vue pour créer un nouvel élevage
+@login_required
 def nouveau(request):
     if 'nombre_lapins' not in request.session:
         # demander combien de lapins on veut créer
@@ -47,12 +62,14 @@ def nouveau(request):
 
 
 # Vue qui affiche la liste des élevages
+@login_required
 def liste(request):
     elevages = Elevage.objects.all()  
     return render(request, "elevage/liste.html", {"elevages" : elevages})
 
 
 # Vue pour consulter un élevage en détail et effectuer les actions du tour
+@login_required
 def detail(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)  
     lapins = elevage.individus.filter(etat__in=['présent', 'gravide'])  # Lapins actifs
@@ -81,6 +98,7 @@ def detail(request, elevage_id):
 
 
 # Vue qui affiche les règles du jeu (valeurs des constantes)
+@login_required
 def liste_regle(request):
     regles = {
         'PRIX_NOURRITURE_PAR_KG': Regle.PRIX_NOURRITURE_PAR_KG,
@@ -103,6 +121,7 @@ def liste_regle(request):
 
 
 # Vue pour supprimer un élevage et tous les lapins liés
+@login_required
 def supprimer_elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)  
 
