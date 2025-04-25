@@ -155,3 +155,29 @@ class Regle:
     # Mort par vieillesse
     DUREE_VIE_MAX = 96                 # Âge à partir duquel le lapin peut mourir de viellesse 
     PROBA_MORT_VIEUX = 0.1             # Proba du lapin de mourir de vieillesse une fois l'âge requis dépassé
+
+
+# Classe stockant l'historique des états d'un élevage
+class ElevageDatas(models.Modelm):
+    # élevage
+    elevage = models.ForeignKey(Elevage, on_delete=models.CASCADE)
+    tour = models.IntegerField()
+    
+    # population
+    nb_males = models.IntegerField()
+    nb_femelles = models.IntegerField()
+    nb_lapereaux = models.IntegerField()
+    
+    # démographie
+    naissances = models.IntegerField()
+    morts = models.IntegerField()
+    ventes = models.IntegerField()
+    maladies = models.IntegerField()
+    
+    # ressources
+    argent = models.IntegerField()
+    nourriture = models.IntegerField()
+    cages = models.IntegerField()
+
+    # date de la sauvegarde
+    date = models.DateTimeField(auto_now_add=True)
