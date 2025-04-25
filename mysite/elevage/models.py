@@ -20,7 +20,7 @@ class Elevage(models.Model):
             cages_achetees * Regle.PRIX_CAGE
         )
         self.argent += len(lapins_vendus) * Regle.PRIX_VENTE_LAPIN
-        #self.tour += 1  # Incrémente le tour
+        self.tour += 1  # Incrémente le tour
 
         # Marque les lapins vendus comme vendus
         for lapin in lapins_vendus:
@@ -113,9 +113,9 @@ class Elevage(models.Model):
             elevage=self,
             tour=self.tour,
             
-            nb_males=self.individus.filter(sexe='m').count(),
-            nb_femelles=self.individus.filter(sexe='f').count(),
-            nb_lapereaux=self.individus.filter(age__lte = 2).count(),
+            nb_males=self.individus.filter(sexe='m', etat='présent').count(),
+            nb_femelles=self.individus.filter(sexe='f', etat__in=['présent', 'gravide']).count(),
+            nb_lapereaux=self.individus.filter(age__lte = 2, etat='présent').count(),
             
             naissances=nb_naissances,
             morts=len(morts),
