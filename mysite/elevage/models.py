@@ -113,9 +113,9 @@ class Elevage(models.Model):
             elevage=self,
             tour=self.tour,
             
-            nb_males=self.individus.filter(sexe='m', etat='présent').count(),
-            nb_femelles=self.individus.filter(sexe='f', etat__in=['présent', 'gravide']).count(),
-            nb_lapereaux=self.individus.filter(age__lte = 2, etat='présent').count(),
+            nb_males=self.individus.filter(sexe='m', etat='présent', age__gte=3).count(),
+            nb_femelles=self.individus.filter(sexe='f', etat__in=['présent', 'gravide'], age__gte=3).count(),
+            nb_lapereaux=self.individus.filter(age__lte=2, etat='présent').count(),
             
             naissances=nb_naissances,
             morts=len(morts),
