@@ -2,6 +2,38 @@
 
 {% block title %} {{ elevage.name }} {% endblock %}
 
+{% block head %}
+<style>
+  .messages-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .message {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 10px auto;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .message.error {
+    background-color: #ffe5e5;
+    color: #cc0000;
+    border: 1px solid #cc0000;
+  }
+  
+  .message.success {
+    background-color: #e5ffe5;
+    color: #006600;
+    border: 1px solid #006600;
+  }
+</style>
+{% endblock %}
+
+
+  
 {% block content %}
 
 <fieldset>
@@ -72,7 +104,6 @@
 
 <!-- Chargement de Chart.js depuis un CDN-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
 // Récupération des données JSON concernant l'élevage
 fetch("/datas/{{ elevage.id }}/")
@@ -267,8 +298,18 @@ fetch("/datas/{{ elevage.id }}/")
         <button type="submit">Valider le tour</button>
     </form>
 
+  
+    <div class="messages-container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
 
-
+    
     <br><br>
     <p><a href="{% url 'elevage:regles' %}" target="_blank">Voir la liste des règles</a></p>
     <p><a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a></p>

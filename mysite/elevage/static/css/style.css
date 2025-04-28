@@ -1,3 +1,35 @@
+.messages-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+.message {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 10px auto;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+/* Erreur */
+.message.error {
+    background-color: #ffe5e5;
+    color: #cc0000;
+  border: 1px solid #cc0000;
+}
+  
+  /* Succès */
+.message.success {
+    background-color: #e5ffe5;
+    color: #006600;
+    border: 1px solid #006600;
+}
+
+
+
+
+
 body {
     font-family: 'Share Tech Mono', monospace;
     background-color: #000;        
@@ -172,3 +204,32 @@ fieldset {
     transform: scale(1.1);
 }
 
+
+
+.messages-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+.message {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 10px auto;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+/* Erreur */
+.message.error {
+    background-color: #ffe5e5;
+    color: #cc0000;
+  border: 1px solid #cc0000;
+}
+  
+  /* Succès */
+.message.success {
+    background-color: #e5ffe5;
+    color: #006600;
+    border: 1px solid #006600;
+}

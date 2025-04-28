@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.forms import modelformset_factory
 from django.http import JsonResponse
+from django.contrib import messages
 
 from .models import Elevage, Individu, Regle, ElevageDatas
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
@@ -68,8 +69,18 @@ def detail(request, elevage_id):
             nourriture = form.cleaned_data['nourriture_achetee']
             cages = form.cleaned_data['cages_achetees']
 
+
+
+
+            try:
+                elevage.avancer_tour(nourriture, cages, lapins_vendus)
+                messages.success(request, "Le tour a été avancé avec succès !")
+            except ValueError as e:
+                messages.error(request, str(e))  # On affiche l'erreur remontée par avancer_tour
+                
             # Fait avancer le jeu d’un tour
-            elevage.avancer_tour(nourriture, cages, lapins_vendus)
+            #elevage.avancer_tour(nourriture, cages, lapins_vendus)
+            
     else:
         form = ActionsForm(elevage=elevage)
         form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
