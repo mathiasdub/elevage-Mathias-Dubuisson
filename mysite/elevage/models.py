@@ -17,7 +17,8 @@ class Elevage(models.Model):
         #----- Vérification de la capacité d'achat -----#
         cout_total = (
             nourriture_achetee * Regle.PRIX_NOURRITURE_PAR_KG +
-            cages_achetees * Regle.PRIX_CAGE
+            cages_achetees * Regle.PRIX_CAGE +
+            depenses_sante
         )
 
         if self.argent < cout_total:
@@ -197,6 +198,7 @@ class Regle:
     # Mort par vieillesse
     DUREE_VIE_MAX = 96                 # Âge à partir duquel le lapin peut mourir de viellesse 
     PROBA_MORT_VIEUX = 0.1             # Proba du lapin de mourir de vieillesse une fois l'âge requis dépassé
+
 
 class Sante(models.Model):
     individu = models.ForeignKey(Individu, on_delete=models.CASCADE, related_name='sante',null=True)  # Référence à l’individu
