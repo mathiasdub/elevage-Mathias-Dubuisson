@@ -45,12 +45,18 @@ class Elevage(models.Model):
             nb_bebes = random.randint(1, Regle.PORTEE_MAX)
             for _ in range(nb_bebes):
                 sexe = random.choice(['f', 'm'])
-                Individu.objects.create(
+                ind = Individu.objects.create(
                     elevage=self,
                     age=0,
                     sexe=sexe,
-                    etat='présent'
+                    etat='présent',
                 )
+                ste = Sante.objects.create(
+                    niveau_sante=100,
+                    malade=False,
+                )
+                ste.individu = ind
+                ste.save()
             femelle.etat = 'présent'  # Elle redevient normale après l’accouchement
             femelle.save()
 
@@ -82,24 +88,21 @@ class Elevage(models.Model):
         for lapin in morts_par_faim:
             lapin.etat = "mort"
             lapin.save()
-
-        #----- Gestion de la surpopulation -----#
-        lapins_restants = self.individus.filter(etat__in=['présent', 'gravide'])
-        if lapins_restants.count() > self.nb_cages * Regle.INDIVIDUS_PAR_CAGE_SURPOP:
-            # 50% des lapins meurent si surpopulation
-            morts = random.sample(list(lapins_restants), k=int(0.5 * lapins_restants.count()))
-            for lapin in morts:
-                lapin.etat = "mort"
-                lapin.save()
-        
+            
         #----- Gestion des morts par vieillesse -----#
         lapins_restants = self.individus.filter(etat__in=['présent', 'gravide'], age__gte=Regle.DUREE_VIE_MAX)
         for lapin in lapins_restants:
             if random.random() < Regle.PROBA_MORT_VIEUX:
                 lapin.etat = "mort"
                 lapin.save()
-            
-                
+
+        #----- Gestion de la surpopulation et de la santé -----#
+        
+        reste_depenses_sante = depenses_sante
+        lapins_restants = self.individus.filter(etat__in=['présent', 'gravide'])
+        niveau_surpopulation = lapins_restants.count() / (self.nb_cages)  # Ratio de surpopulation
+        for lapin in self.individus.filter(etat__in=['présent', 'gravide']):
+            reste_depenses_sante = lapin.sante.first().avance_sante(reste_depenses_sante,niveau_surpopulation)
 
         self.save()  # Sauvegarde finale des données
 
@@ -127,7 +130,7 @@ class Individu(models.Model):
     elevage = models.ForeignKey(Elevage, on_delete=models.CASCADE, related_name="individus")    # Référence à l’élevage
 
     def __str__(self):
-        return f"sexe : {self.sexe}, âge : {self.age} mois, état : {self.etat}"
+        return f"sexe : {self.sexe}, âge : {self.age} mois, état : {self.etat}, sante : {self.sante.first().niveau_sante}/100, malade : {'oui' if self.sante.first().malade else 'non'}"  # Représentation texte de l’individu
 
 
 # Classe contenant toutes les règles du jeu 
@@ -157,14 +160,82 @@ class Regle:
     PROBA_MORT_VIEUX = 0.1             # Proba du lapin de mourir de vieillesse une fois l'âge requis dépassé
 
 class Sante(models.Model):
-    individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante')
+    individu = models.ForeignKey(Individu, on_delete=models.CASCADE, related_name='sante',null=True)  # Référence à l’individu
     niveau_sante = models.IntegerField(default=100)
     malade = models.BooleanField(default=False)
     
-    # si maladie, on diminue le niveau de santé de 10 par mois
+    def __str__(self):
+        return f"Santé de l'individu : {self.niveau_sante}/100, malade : {'oui' if self.malade else 'non'}"
+    
+    # si maladie, on diminue le niveau de santé de 20 par mois
     # une maladie apparaît aléatoirement avec une probabilité de 0.05
-    # si le niveau de santé est inférieur à 50, on augmente la probabilité de maladie à 0.1
     # si + de 6 (resp. 7,8,9,10) par cage, on augmente la probabilité de maladie à 0.2 (resp. 0.4,0.6,0.8,1)
     # pour chaque 20€ dépensés, une maladie est soignée avec une probabilité de 0.5
-    # si l'individu est sain, sa santé augmente de 10 par mois
+    # si l'individu est sain, sa santé augmente de 20 par mois
+    
+    def avance_sante(self, depenses_sante, niveau_surpopulation):
+        
+        # malade -> sain avec dépenses de santé
+        
+        reste_depenses_sante = depenses_sante
+        
+        if self.malade:
+            if reste_depenses_sante > 20:
+                rd = random.random()
+                if rd < 0.5:
+                    self.malade = False
+                    self.niveau_sante += 20
+                    if self.niveau_sante > 100:
+                        self.niveau_sante = 100
+                    self.save()
+                reste_depenses_sante -= 20
+                    
+        # sain -> malade avec probabilité de maladie
+        
+        if not(self.malade):
+            rd = random.random()
+            lim_cages = Regle.INDIVIDUS_PAR_CAGE_MAX
+            if(niveau_surpopulation < lim_cages):
+                if rd < 0.05:
+                    self.malade = True
+                    self.save()
+            elif(niveau_surpopulation < lim_cages+1):
+                if rd < 0.2:
+                    self.malade = True
+                    self.save()
+            elif(niveau_surpopulation < lim_cages+2):
+                if rd < 0.4:
+                    self.malade = True
+                    self.save()
+            elif(niveau_surpopulation < lim_cages+3):
+                if rd < 0.6:
+                    self.malade = True
+                    self.save()
+            elif(niveau_surpopulation < lim_cages+4):
+                if rd < 0.8:
+                    self.malade = True
+                    self.save()
+            else:
+                self.malade = True
+                self.save()
+        
+        # si le lapin est malade, on diminue sa santé de 20         
+        
+        if self.malade:
+            self.niveau_sante -= 20
+            if self.niveau_sante <= 0:
+                self.individu.etat = "mort"
+                self.individu.save()
+            self.save()
+        
+        # si le lapin est sain, on augmente sa santé de 20
+        
+        if not(self.malade):
+            self.niveau_sante += 20
+            if self.niveau_sante > 100:
+                self.niveau_sante = 100
+            self.save()
+            
+        return reste_depenses_sante
+            
 

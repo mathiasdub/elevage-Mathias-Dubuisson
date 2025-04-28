@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Elevage, Individu, Regle
+from .models import Elevage, Individu, Regle, Sante
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
 
@@ -34,6 +34,13 @@ def nouveau(request):
                 lapin = form.save(commit=False)
                 lapin.elevage = elevage
                 lapin.save()
+                sante = Sante.objects.create(
+                    niveau_sante=100,
+                    malade=False,
+                )
+                sante.individu = lapin
+                sante.save()
+                
             del request.session['nombre_lapins']  
             return redirect('elevage:detail', elevage_id=elevage.id)
     else:
@@ -65,9 +72,10 @@ def detail(request, elevage_id):
             lapins_vendus = form.cleaned_data['lapins_a_vendre']
             nourriture = form.cleaned_data['nourriture_achetee']
             cages = form.cleaned_data['cages_achetees']
+            depenses_sante = form.cleaned_data['depenses_sante']
 
             # Fait avancer le jeu d’un tour
-            elevage.avancer_tour(nourriture, cages, lapins_vendus)
+            elevage.avancer_tour(nourriture, cages, lapins_vendus,depenses_sante)
     else:
         form = ActionsForm(elevage=elevage)
         form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
