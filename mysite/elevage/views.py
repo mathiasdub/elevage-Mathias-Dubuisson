@@ -117,12 +117,20 @@ def liste_regle(request):
 
 # Vue pour supprimer un élevage et tous les lapins liés
 def supprimer_elevage(request, elevage_id):
-    elevage = get_object_or_404(Elevage, id=elevage_id)  
+    elevage = get_object_or_404(Elevage, id=elevage_id)
 
     if request.method == 'POST':
-        Individu.objects.filter(elevage=elevage).delete()  # Supprime les lapins de cet élevage
-        elevage.delete()  # Supprime l’élevage lui-même
-        return redirect('elevage:liste')  # Retour à la liste après suppression
+        # Supprimer tous les objets ElevageDatas associés à cet élevage
+        ElevageDatas.objects.filter(elevage=elevage).delete()
+        
+        # Supprimer les lapins de cet élevage
+        Individu.objects.filter(elevage=elevage).delete()
+
+        # Supprimer l’élevage lui-même
+        elevage.delete()
+
+        # Redirection après suppression
+        return redirect('elevage:liste')
 
     return render(request, 'elevage/supprimer_elevage.html', {'elevage': elevage})
 
