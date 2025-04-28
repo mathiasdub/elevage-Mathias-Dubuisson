@@ -4,13 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Elevage de lapinous{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block head %}{% endblock %}
 </head>
 <body>
     <header>
         <h1>Élevage de lapinous</h1>
+        {% if user.is_authenticated %}
+        <p>Connecté en tant que {{ user.username }} | <a href="{% url 'elevage:logout' %}">Se déconnecter</a></p>
+    {% endif %}
         <hr>
+        
     </header>
 
     <main>

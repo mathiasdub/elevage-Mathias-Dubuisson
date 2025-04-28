@@ -2,9 +2,44 @@
 
 {% block title %} {{ elevage.name }} {% endblock %}
 
+{% block head %}
+<style>
+  .messages-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .message {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 10px auto;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .message.error {
+    background-color: #ffe5e5;
+    color: #cc0000;
+    border: 1px solid #cc0000;
+  }
+  
+  .message.success {
+    background-color: #e5ffe5;
+    color: #006600;
+    border: 1px solid #006600;
+  }
+</style>
+{% endblock %}
+
+
+  
 {% block content %}
+
 <fieldset>
     <legend><h1>Détail de l'élevage : {{ elevage.name }}</h1></legend>
+
+    <h3>Tour actuel : {{ elevage.tour }}</h3>
 
     <ul>
     <li><strong>Argent :</strong> {{ elevage.argent }} €</li>
@@ -21,13 +56,240 @@
             {% endif %}
         {% endfor %}
     </ul>
-    </fieldset>
+</fieldset>
     
-    <br><br>
+<br><br>
 
 
-    <fieldset>
-    <legend><h1>Actions du tour</h1></legend>
+<fieldset><legend><h1 style="text-align:center; margin-bottom: 30px;">Statistiques de l'élevage :</h1></legend>
+
+<div style="display: flex; flex-direction: column; align-items: center; gap: 40px;">
+  <!-- Graphique Population -->
+  <div style="width: 600px;">
+    <h3 style="text-align: center;">Population</h3>
+    <canvas id="populationChart" width="600" height="400"></canvas>
+  </div>
+
+  <!-- Graphique variations -->
+  <div style="width: 600px; ">
+    <h3 style="text-align: center;">Variations démographiques</h3>
+    <canvas id="birthDeathChart" width="600" height="400"></canvas>
+  </div>
+
+  <!-- Graphique Nourriture -->
+  <div style="width: 600px;">
+    <h3 style="text-align: center;">Nourriture disponible (kg)</h3>
+    <canvas id="nourritureChart" width="600" height="400"></canvas>
+  </div>
+
+  <!-- Graphique Argent -->
+  <div style="width: 600px;">
+    <h3 style="text-align: center;">Argent (€)</h3>
+    <canvas id="argentChart" width="600" height="400"></canvas>
+  </div>
+
+  <!-- Graphique Cages -->
+  <div style="width: 600px;">
+    <h3 style="text-align: center;">Nombre de cages</h3>
+    <canvas id="cagesChart" width="600" height="400"></canvas>
+  </div>
+
+
+  <!-- Graphe Détail actuel de l'élevage -->
+  <div style="width: 600px;">
+    <h3 style="text-align: center;">Détail actuel de l'élevage (Répartition des lapins)</h3>
+    <canvas id="currentDetailChart" width="600" height="400"></canvas>
+  </div>
+</div>
+
+<!-- Chargement de Chart.js depuis un CDN-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Récupération des données JSON concernant l'élevage
+fetch("/datas/{{ elevage.id }}/")
+  .then(response => response.json())
+  .then(data => {
+    console.log("Données reçues :", data);
+
+    // Génération des étiquettes pour l'axe X : "Tour 1", "Tour 2", etc.
+    const labels = data.map(entry => `Tour ${entry.tour}`);
+
+    // Extraction des séries de données pour chaque indicateur
+    const males = data.map(entry => entry.nb_males);
+    const femelles = data.map(entry => entry.nb_femelles);
+    const lapereaux = data.map(entry => entry.nb_lapereaux);
+
+    const naissances = data.map(entry => entry.naissances);
+    const mortalites = data.map(entry => entry.morts);
+    const ventes = data.map(entry => entry.ventes);
+
+    const nourritures = data.map(entry => entry.nourriture);
+    const argents = data.map(entry => entry.argent);
+    const cages = data.map(entry => entry.cages);
+
+    // === Création des graphiques ===
+
+    // Graphe 1 : Évolution de la population
+    new Chart(document.getElementById('populationChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Mâles', data: males, borderColor: 'blue', backgroundColor: 'blue', fill: false },
+          { label: 'Femelles', data: femelles, borderColor: 'pink', backgroundColor: 'pink', fill: false },
+          { label: 'Lapereaux', data: lapereaux, borderColor: 'green', backgroundColor: 'green', fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' } // Grille grise claire
+          }
+        }
+      }
+    });
+
+    // Graphe 2 : Naissances, mortalités et ventes par tour
+    new Chart(document.getElementById('birthDeathChart'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Naissances', data: naissances, backgroundColor: 'lightgreen' },
+          { label: 'Mortalités', data: mortalites, backgroundColor: 'red' },
+          { label: 'Ventes', data: ventes, backgroundColor: 'yellow' }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
+        }
+      }
+    });
+
+    // Graphe 3 : Nourriture disponible au fil du temps
+    new Chart(document.getElementById('nourritureChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Nourriture disponible',
+          data: nourritures,
+          borderColor: 'orange',
+          backgroundColor: 'orange',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
+        }
+      }
+    });
+
+    // Graphe 4 : Évolution de l'argent disponible
+    new Chart(document.getElementById('argentChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Argent',
+          data: argents,
+          borderColor: 'gold',
+          backgroundColor: 'gold',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
+        }
+      }
+    });
+
+    // Graphe 5 : Nombre de cages disponibles
+    new Chart(document.getElementById('cagesChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Nombre de cages',
+          data: cages,
+          borderColor: 'purple',
+          backgroundColor: 'purple',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
+        }
+      }
+    });
+
+    // Graphe 6 : Répartition actuelle (mâles, femelles, lapereaux) sous forme de camembert
+    const lastEntry = data[data.length - 1]; // Dernier état de l'élevage
+
+    const currentDetailData = {
+      labels: ['Mâles', 'Femelles', 'Lapereaux'],
+      datasets: [{
+        data: [
+          lastEntry.nb_males,   
+          lastEntry.nb_femelles,
+          lastEntry.nb_lapereaux
+        ],
+        backgroundColor: ['blue', 'pink', 'green'],
+        hoverOffset: 4
+      }]
+    };
+    
+    new Chart(document.getElementById('currentDetailChart'), {
+      type: 'pie',
+      data: currentDetailData,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return tooltipItem.label + ': ' + tooltipItem.raw;
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+
+</fieldset>
+
+    
+<br><br>
+
+
+<h1 style="text-align:center; margin-bottom: 30px;">Actions du tour :</h1>
     <form method="post">
         {% csrf_token %}
         <table>
@@ -35,9 +297,19 @@
         </table>
         <button type="submit">Valider le tour</button>
     </form>
-    </fieldset>
 
+  
+    <div class="messages-container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
 
+    
     <br><br>
     <p><a href="{% url 'elevage:regles' %}" target="_blank">Voir la liste des règles</a></p>
     <p><a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a></p>

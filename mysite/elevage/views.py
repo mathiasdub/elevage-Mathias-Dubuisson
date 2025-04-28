@@ -2,14 +2,33 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Elevage, Individu, Regle, Sante
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
+from django.http import JsonResponse
+from django.contrib import messages
+
+from .models import Elevage, Individu, Regle, ElevageDatas
+from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 
 
-# Vue du menu principal
+
+    
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('elevage:login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
+
+@login_required
 def menu(request):
     return render(request, "elevage/menu.html")  # Affiche la page d’accueil du jeu
 
-
 # Vue pour créer un nouvel élevage
+@login_required
 def nouveau(request):
     if 'nombre_lapins' not in request.session:
         # demander combien de lapins on veut créer
@@ -29,7 +48,10 @@ def nouveau(request):
         elevage_form = ElevageForm(request.POST)
         lapin_formset = LapinFormSet(request.POST, queryset=Individu.objects.none())
         if elevage_form.is_valid() and lapin_formset.is_valid():
-            elevage = elevage_form.save()  # Sauvegarde de l’élevage
+            elevage = elevage_form.save(commit=False)  # Créer l’objet sans le sauvegarder
+            elevage.user = request.user  # Lier l’utilisateur après la création
+            elevage.save()  # Sauvegarder l’élevage
+            
             for form in lapin_formset:     # Création et sauvegarde des lapins liés
                 lapin = form.save(commit=False)
                 lapin.elevage = elevage
@@ -53,13 +75,16 @@ def nouveau(request):
     })
 
 
+
 # Vue qui affiche la liste des élevages
+@login_required
 def liste(request):
-    elevages = Elevage.objects.all()  
+    elevages = Elevage.objects.filter(user=request.user)  
     return render(request, "elevage/liste.html", {"elevages" : elevages})
 
 
 # Vue pour consulter un élevage en détail et effectuer les actions du tour
+@login_required
 def detail(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)  
     lapins = elevage.individus.filter(etat__in=['présent', 'gravide'])  # Lapins actifs
@@ -74,6 +99,15 @@ def detail(request, elevage_id):
             cages = form.cleaned_data['cages_achetees']
             depenses_sante = form.cleaned_data['depenses_sante']
 
+
+
+
+            try:
+                elevage.avancer_tour(nourriture, cages, lapins_vendus, depenses_sante)
+                messages.success(request, "Le tour a été avancé avec succès !")
+            except ValueError as e:
+                messages.error(request, str(e))  # On affiche l'erreur remontée par avancer_tour
+                
             # Fait avancer le jeu d’un tour
             elevage.avancer_tour(nourriture, cages, lapins_vendus,depenses_sante)
     else:
@@ -89,6 +123,7 @@ def detail(request, elevage_id):
 
 
 # Vue qui affiche les règles du jeu (valeurs des constantes)
+@login_required
 def liste_regle(request):
     regles = {
         'PRIX_NOURRITURE_PAR_KG': Regle.PRIX_NOURRITURE_PAR_KG,
@@ -111,12 +146,27 @@ def liste_regle(request):
 
 
 # Vue pour supprimer un élevage et tous les lapins liés
+@login_required
 def supprimer_elevage(request, elevage_id):
-    elevage = get_object_or_404(Elevage, id=elevage_id)  
+    elevage = get_object_or_404(Elevage, id=elevage_id)
 
     if request.method == 'POST':
-        Individu.objects.filter(elevage=elevage).delete()  # Supprime les lapins de cet élevage
-        elevage.delete()  # Supprime l’élevage lui-même
-        return redirect('elevage:liste')  # Retour à la liste après suppression
+        # Supprimer tous les objets ElevageDatas associés à cet élevage
+        ElevageDatas.objects.filter(elevage=elevage).delete()
+        
+        # Supprimer les lapins de cet élevage
+        Individu.objects.filter(elevage=elevage).delete()
+
+        # Supprimer l’élevage lui-même
+        elevage.delete()
+
+        # Redirection après suppression
+        return redirect('elevage:liste')
 
     return render(request, 'elevage/supprimer_elevage.html', {'elevage': elevage})
+
+
+# Vue pour afficher l'historique des statistiques de l’élevage
+def get_datas(request, elevage_id):
+    data = list(ElevageDatas.objects.filter(elevage_id=elevage_id).order_by("tour").values())
+    return JsonResponse(data, safe=False)

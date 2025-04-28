@@ -1,35 +1,47 @@
 from django.db import models
 import random
+from django.contrib.auth.models import User
 
 
 # Modèle représentant un élevage de lapins
 class Elevage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)                 # Nom de l'élevage
     nb_cages = models.PositiveIntegerField()                # Nombre de cages disponibles
     qt_nourriture = models.PositiveIntegerField()           # Quantité de nourriture (en kg)
     argent = models.PositiveIntegerField()                  # Argent disponible (en €)
+    tour = models.PositiveIntegerField(default=0)           # Tour actuel
 
     # Fonction appelée à chaque tour pour mettre à jour l’état de l’élevage
-    def avancer_tour(self, nourriture_achetee, cages_achetees, lapins_vendus,depenses_sante):
-        #----- Mise à jour des ressources de l’élevage -----#
-        self.qt_nourriture += nourriture_achetee
-        self.nb_cages += cages_achetees
-        self.argent -= (
+    def avancer_tour(self, nourriture_achetee, cages_achetees, lapins_vendus, depenses_sante):
+        #----- Vérification de la capacité d'achat -----#
+        cout_total = (
             nourriture_achetee * Regle.PRIX_NOURRITURE_PAR_KG +
             cages_achetees * Regle.PRIX_CAGE
         )
+
+        if self.argent < cout_total:
+            raise ValueError("Pas assez d'argent pour effectuer cet achat.")
+    
+        #----- Mise à jour des ressources de l’élevage -----#
+        self.qt_nourriture += nourriture_achetee
+        self.nb_cages += cages_achetees
+        self.argent -= cout_total
         self.argent += len(lapins_vendus) * Regle.PRIX_VENTE_LAPIN
+        self.tour += 1  # Incrémente le tour
 
         # Marque les lapins vendus comme vendus
         for lapin in lapins_vendus:
             lapin.etat = "vendu"
             lapin.save()
 
+
         #----- Vieillissement de tous les lapins -----#
         lapins = self.individus.all()
         for lapin in lapins:
             lapin.age += 1
             lapin.save()
+
 
         #----- Reproduction -----#
         # Récupération des femelles fécondables / femelles gravides / femelles adultes
@@ -41,8 +53,10 @@ class Elevage(models.Model):
 
 
         # Accouchement des femelles gravides
+        nb_naissances = 0
         for femelle in femelles_gravides:
             nb_bebes = random.randint(1, Regle.PORTEE_MAX)
+            nb_naissances += nb_bebes
             for _ in range(nb_bebes):
                 sexe = random.choice(['f', 'm'])
                 ind = Individu.objects.create(
@@ -66,12 +80,13 @@ class Elevage(models.Model):
                 femelle.etat = "gravide"
                 femelle.save()
 
+
         #----- Consommation de nourriture et gestion de la faim ------#
-        morts_par_faim = []
+        morts = []
 
         for lapin in self.individus.all():
             if lapin.age == 0 and not femelles_adultes.exists():
-                morts_par_faim.append(lapin)    # aucune femelle pour nourrir le jeune lapin
+                morts.append(lapin)    # aucune femelle pour nourrir le jeune lapin
             elif lapin.age == 0:
                 conso = 0  # Lait maternel
             elif lapin.age == 1:
@@ -82,19 +97,15 @@ class Elevage(models.Model):
             if self.qt_nourriture >= conso:
                 self.qt_nourriture -= conso
             else:
-                morts_par_faim.append(lapin)
+                morts.append(lapin)
 
-        # Marque les lapins morts de faim comme morts
-        for lapin in morts_par_faim:
-            lapin.etat = "mort"
-            lapin.save()
-            
+        
         #----- Gestion des morts par vieillesse -----#
         lapins_restants = self.individus.filter(etat__in=['présent', 'gravide'], age__gte=Regle.DUREE_VIE_MAX)
         for lapin in lapins_restants:
             if random.random() < Regle.PROBA_MORT_VIEUX:
-                lapin.etat = "mort"
-                lapin.save()
+                morts.append(lapin)  # Le lapin meurt de vieillesse
+
 
         #----- Gestion de la surpopulation et de la santé -----#
         
@@ -102,9 +113,37 @@ class Elevage(models.Model):
         lapins_restants = self.individus.filter(etat__in=['présent', 'gravide'])
         niveau_surpopulation = lapins_restants.count() / (self.nb_cages)  # Ratio de surpopulation
         for lapin in self.individus.filter(etat__in=['présent', 'gravide']):
-            reste_depenses_sante = lapin.sante.first().avance_sante(reste_depenses_sante,niveau_surpopulation)
+            reste_depenses_sante, morts = lapin.sante.first().avance_sante(reste_depenses_sante,niveau_surpopulation,morts)
 
+                
+        
+        
+        #----- Mise à jour de l’état des lapins morts -----#
+        for lapin in morts:
+            lapin.etat = "mort"
+            lapin.save()
+                
         self.save()  # Sauvegarde finale des données
+                
+                
+        #----- Ajout des données du tour dans l'historique des états de l'élevage -----#
+        ElevageDatas.objects.create(
+            elevage=self,
+            tour=self.tour,
+            
+            nb_males=self.individus.filter(sexe='m', etat='présent', age__gte=3).count(),
+            nb_femelles=self.individus.filter(sexe='f', etat__in=['présent', 'gravide'], age__gte=3).count(),
+            nb_lapereaux=self.individus.filter(age__lte=2, etat='présent').count(),
+            
+            naissances=nb_naissances,
+            morts=len(morts),
+            ventes=len(lapins_vendus),
+            
+            argent=self.argent,
+            nourriture=self.qt_nourriture,
+            cages=self.nb_cages,
+        )
+
 
     def __str__(self):
         return self.name  # Représentation texte de l’élevage
@@ -173,7 +212,7 @@ class Sante(models.Model):
     # pour chaque 20€ dépensés, une maladie est soignée avec une probabilité de 0.5
     # si l'individu est sain, sa santé augmente de 20 par mois
     
-    def avance_sante(self, depenses_sante, niveau_surpopulation):
+    def avance_sante(self, depenses_sante, niveau_surpopulation, morts):
         
         # malade -> sain avec dépenses de santé
         
@@ -225,8 +264,7 @@ class Sante(models.Model):
         if self.malade:
             self.niveau_sante -= 20
             if self.niveau_sante <= 0:
-                self.individu.etat = "mort"
-                self.individu.save()
+                morts.append(self.individu)  # Le lapin meurt de maladie
             self.save()
         
         # si le lapin est sain, on augmente sa santé de 20
@@ -237,6 +275,30 @@ class Sante(models.Model):
                 self.niveau_sante = 100
             self.save()
             
-        return reste_depenses_sante
+        return reste_depenses_sante, morts
             
 
+
+# Classe stockant l'historique des états d'un élevage
+class ElevageDatas(models.Model):
+    # élevage
+    elevage = models.ForeignKey(Elevage, on_delete=models.CASCADE)
+    tour = models.IntegerField()
+    
+    # population
+    nb_males = models.IntegerField()
+    nb_femelles = models.IntegerField()
+    nb_lapereaux = models.IntegerField()
+    
+    # démographie
+    naissances = models.IntegerField()
+    morts = models.IntegerField()
+    ventes = models.IntegerField()
+    
+    # ressources
+    argent = models.IntegerField()
+    nourriture = models.IntegerField()
+    cages = models.IntegerField()
+
+    # date de la sauvegarde
+    date = models.DateTimeField(auto_now_add=True)
