@@ -10,7 +10,7 @@ class Elevage(models.Model):
     argent = models.PositiveIntegerField()                  # Argent disponible (en €)
 
     # Fonction appelée à chaque tour pour mettre à jour l’état de l’élevage
-    def avancer_tour(self, nourriture_achetee, cages_achetees, lapins_vendus):
+    def avancer_tour(self, nourriture_achetee, cages_achetees, lapins_vendus,depenses_sante):
         #----- Mise à jour des ressources de l’élevage -----#
         self.qt_nourriture += nourriture_achetee
         self.nb_cages += cages_achetees
@@ -159,5 +159,12 @@ class Regle:
 class Sante(models.Model):
     individu = models.OneToOneField('Individu', on_delete=models.CASCADE, related_name='sante')
     niveau_sante = models.IntegerField(default=100)
-    maladies = models.TextField(blank=True, null=True)
-    dernier_checkup = models.DateField(auto_now=True)
+    malade = models.BooleanField(default=False)
+    
+    # si maladie, on diminue le niveau de santé de 10 par mois
+    # une maladie apparaît aléatoirement avec une probabilité de 0.05
+    # si le niveau de santé est inférieur à 50, on augmente la probabilité de maladie à 0.1
+    # si + de 6 (resp. 7,8,9,10) par cage, on augmente la probabilité de maladie à 0.2 (resp. 0.4,0.6,0.8,1)
+    # pour chaque 20€ dépensés, une maladie est soignée avec une probabilité de 0.5
+    # si l'individu est sain, sa santé augmente de 10 par mois
+
