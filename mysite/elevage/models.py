@@ -178,10 +178,11 @@ class Sante(models.Model):
         # malade -> sain avec dépenses de santé
         
         reste_depenses_sante = depenses_sante
-        
+        print(f"depenses_sante={depenses_sante}")
         if self.malade:
-            if reste_depenses_sante > 20:
+            if reste_depenses_sante >= 20:
                 rd = random.random()
+                print(f"rd={rd}")
                 if rd < 0.5:
                     self.malade = False
                     self.niveau_sante += 20
