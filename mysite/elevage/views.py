@@ -7,15 +7,13 @@ from django.contrib.auth.decorators import login_required
 
 
 
-"""def home_view(request):
-    return render(request, 'elevage/home.html')"""
     
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('login')
+            return redirect('elevage:login')
     else:
         form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
@@ -45,7 +43,10 @@ def nouveau(request):
         elevage_form = ElevageForm(request.POST)
         lapin_formset = LapinFormSet(request.POST, queryset=Individu.objects.none())
         if elevage_form.is_valid() and lapin_formset.is_valid():
-            elevage = elevage_form.save()  # Sauvegarde de l’élevage
+            elevage = elevage_form.save(commit=False)  # Créer l’objet sans le sauvegarder
+            elevage.user = request.user  # Lier l’utilisateur après la création
+            elevage.save()  # Sauvegarder l’élevage
+            
             for form in lapin_formset:     # Création et sauvegarde des lapins liés
                 lapin = form.save(commit=False)
                 lapin.elevage = elevage
@@ -62,10 +63,11 @@ def nouveau(request):
     })
 
 
+
 # Vue qui affiche la liste des élevages
 @login_required
 def liste(request):
-    elevages = Elevage.objects.all()  
+    elevages = Elevage.objects.filter(user=request.user)  
     return render(request, "elevage/liste.html", {"elevages" : elevages})
 
 
@@ -132,3 +134,4 @@ def supprimer_elevage(request, elevage_id):
         return redirect('elevage:liste')  # Retour à la liste après suppression
 
     return render(request, 'elevage/supprimer_elevage.html', {'elevage': elevage})
+

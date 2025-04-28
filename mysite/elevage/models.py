@@ -1,9 +1,11 @@
 from django.db import models
 import random
+from django.contrib.auth.models import User
 
 
 # Modèle représentant un élevage de lapins
 class Elevage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)                 # Nom de l'élevage
     nb_cages = models.PositiveIntegerField()                # Nombre de cages disponibles
     qt_nourriture = models.PositiveIntegerField()           # Quantité de nourriture (en kg)
