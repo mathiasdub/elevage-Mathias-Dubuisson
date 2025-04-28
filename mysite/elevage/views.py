@@ -4,14 +4,28 @@ from django.http import JsonResponse
 
 from .models import Elevage, Individu, Regle, ElevageDatas
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 
 
-# Vue du menu principal
+
+    
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('elevage:login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
+
+@login_required
 def menu(request):
     return render(request, "elevage/menu.html")  # Affiche la page d’accueil du jeu
 
-
 # Vue pour créer un nouvel élevage
+@login_required
 def nouveau(request):
     if 'nombre_lapins' not in request.session:
         # demander combien de lapins on veut créer
@@ -31,7 +45,10 @@ def nouveau(request):
         elevage_form = ElevageForm(request.POST)
         lapin_formset = LapinFormSet(request.POST, queryset=Individu.objects.none())
         if elevage_form.is_valid() and lapin_formset.is_valid():
-            elevage = elevage_form.save()  # Sauvegarde de l’élevage
+            elevage = elevage_form.save(commit=False)  # Créer l’objet sans le sauvegarder
+            elevage.user = request.user  # Lier l’utilisateur après la création
+            elevage.save()  # Sauvegarder l’élevage
+            
             for form in lapin_formset:     # Création et sauvegarde des lapins liés
                 lapin = form.save(commit=False)
                 lapin.elevage = elevage
@@ -48,13 +65,16 @@ def nouveau(request):
     })
 
 
+
 # Vue qui affiche la liste des élevages
+@login_required
 def liste(request):
-    elevages = Elevage.objects.all()  
+    elevages = Elevage.objects.filter(user=request.user)  
     return render(request, "elevage/liste.html", {"elevages" : elevages})
 
 
 # Vue pour consulter un élevage en détail et effectuer les actions du tour
+@login_required
 def detail(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)  
     lapins = elevage.individus.filter(etat__in=['présent', 'gravide'])  # Lapins actifs
@@ -83,6 +103,7 @@ def detail(request, elevage_id):
 
 
 # Vue qui affiche les règles du jeu (valeurs des constantes)
+@login_required
 def liste_regle(request):
     regles = {
         'PRIX_NOURRITURE_PAR_KG': Regle.PRIX_NOURRITURE_PAR_KG,
@@ -105,6 +126,7 @@ def liste_regle(request):
 
 
 # Vue pour supprimer un élevage et tous les lapins liés
+@login_required
 def supprimer_elevage(request, elevage_id):
     elevage = get_object_or_404(Elevage, id=elevage_id)  
 

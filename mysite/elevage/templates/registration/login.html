@@ -1,0 +1,15 @@
+{% extends "elevage/base.html" %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<h2>Connexion</h2>
+<form method="post" action=".">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Se connecter</button>
+</form>
+
+<p>Pas encore de compte ? <a href="{% url 'elevage:signup' %}">Créer un compte</a></p>
+{% endblock %}
+
