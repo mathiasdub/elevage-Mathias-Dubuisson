@@ -14,13 +14,19 @@ class Elevage(models.Model):
 
     # Fonction appelée à chaque tour pour mettre à jour l’état de l’élevage
     def avancer_tour(self, nourriture_achetee, cages_achetees, lapins_vendus):
-        #----- Mise à jour des ressources de l’élevage -----#
-        self.qt_nourriture += nourriture_achetee
-        self.nb_cages += cages_achetees
-        self.argent -= (
+        #----- Vérification de la capacité d'achat -----#
+        cout_total = (
             nourriture_achetee * Regle.PRIX_NOURRITURE_PAR_KG +
             cages_achetees * Regle.PRIX_CAGE
         )
+
+        if self.argent < cout_total:
+            raise ValueError("Pas assez d'argent pour effectuer cet achat.")
+    
+        #----- Mise à jour des ressources de l’élevage -----#
+        self.qt_nourriture += nourriture_achetee
+        self.nb_cages += cages_achetees
+        self.argent -= cout_total
         self.argent += len(lapins_vendus) * Regle.PRIX_VENTE_LAPIN
         self.tour += 1  # Incrémente le tour
 
