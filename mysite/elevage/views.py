@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Elevage, Individu, Regle
-from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
+from django.http import JsonResponse
+
+from .models import Elevage, Individu, Regle, ElevageDatas
+from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 
@@ -153,3 +155,8 @@ def supprimer_elevage(request, elevage_id):
 
     return render(request, 'elevage/supprimer_elevage.html', {'elevage': elevage})
 
+
+# Vue pour afficher l'historique des statistiques de l’élevage
+def get_datas(request, elevage_id):
+    data = list(ElevageDatas.objects.filter(elevage_id=elevage_id).order_by("tour").values())
+    return JsonResponse(data, safe=False)
