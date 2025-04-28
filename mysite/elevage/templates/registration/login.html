@@ -1,6 +1,25 @@
 {% extends "elevage/base.html" %}
 
-{% block title %}Connexion{% endblock %}
+{% block title %}Connexion{% endblock %}*
+
+{% block head %}
+<style>
+    input[type="password"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        background-color: #000;
+        border: 2px solid #00ff00;
+        color: #00ff00;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 10px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+    }
+</style>
+{% endblock %}
+
+
 
 {% block content %}
 <h2>Connexion</h2>
