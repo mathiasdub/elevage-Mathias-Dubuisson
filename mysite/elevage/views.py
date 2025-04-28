@@ -25,6 +25,24 @@ def menu(request):
 # Vue pour créer un nouvel élevage
 @login_required
 def nouveau(request):
+    """user = request.user
+    # Vérifier l'appartenance à un groupe
+    is_basic = user.groups.filter(name='basic').exists()
+
+    # Si l'utilisateur est dans le groupe "basic", on limite le nombre d'élevages à 3
+    if is_basic:
+        max_elevages = 3
+    else:
+        max_elevages = float('inf')  # Pas de limite pour les premium
+
+    # Vérifier le nombre d'élevages existants
+    elevages_existants = Elevage.objects.filter(user=user).count()
+
+    if elevages_existants >= max_elevages :
+        return render(request, 'elevage/liste.html', {
+            'message': "Vous avez atteint le nombre d'élevages autorisés.",
+            'elevages': Elevage.objects.filter(user=user),
+        })"""
     if 'nombre_lapins' not in request.session:
         # demander combien de lapins on veut créer
         if request.method == 'POST':
