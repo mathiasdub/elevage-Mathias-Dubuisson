@@ -14,5 +14,6 @@ urlpatterns = [
     path("elevage/<int:elevage_id>/", views.detail, name="detail"),
     path("regles", views.liste_regle, name="regles"),
     path("elevage/<int:elevage_id>/supprimer", views.supprimer_elevage, name="supprimer"),
-    path('accounts/', include('django.contrib.auth.urls'))
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('signup/', views.signup, name='signup')
 ]

@@ -8,8 +8,9 @@ from django.contrib.auth.decorators import login_required
 
 
 """def home_view(request):
-    return render(request, 'elevage/home.html')
-def signup_view(request):
+    return render(request, 'elevage/home.html')"""
+    
+def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -17,7 +18,7 @@ def signup_view(request):
             return redirect('login')
     else:
         form = UserCreationForm()
-    return render(request, 'registration/signup.html', {'form': form})"""
+    return render(request, 'registration/signup.html', {'form': form})
 
 @login_required
 def menu(request):
