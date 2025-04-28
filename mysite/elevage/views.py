@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.forms import modelformset_factory
 from django.http import JsonResponse
+from django.contrib import messages
 
 from .models import Elevage, Individu, Regle, ElevageDatas
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
@@ -88,8 +89,18 @@ def detail(request, elevage_id):
             nourriture = form.cleaned_data['nourriture_achetee']
             cages = form.cleaned_data['cages_achetees']
 
+
+
+
+            try:
+                elevage.avancer_tour(nourriture, cages, lapins_vendus)
+                messages.success(request, "Le tour a été avancé avec succès !")
+            except ValueError as e:
+                messages.error(request, str(e))  # On affiche l'erreur remontée par avancer_tour
+                
             # Fait avancer le jeu d’un tour
-            elevage.avancer_tour(nourriture, cages, lapins_vendus)
+            #elevage.avancer_tour(nourriture, cages, lapins_vendus)
+            
     else:
         form = ActionsForm(elevage=elevage)
         form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
@@ -128,12 +139,20 @@ def liste_regle(request):
 # Vue pour supprimer un élevage et tous les lapins liés
 @login_required
 def supprimer_elevage(request, elevage_id):
-    elevage = get_object_or_404(Elevage, id=elevage_id)  
+    elevage = get_object_or_404(Elevage, id=elevage_id)
 
     if request.method == 'POST':
-        Individu.objects.filter(elevage=elevage).delete()  # Supprime les lapins de cet élevage
-        elevage.delete()  # Supprime l’élevage lui-même
-        return redirect('elevage:liste')  # Retour à la liste après suppression
+        # Supprimer tous les objets ElevageDatas associés à cet élevage
+        ElevageDatas.objects.filter(elevage=elevage).delete()
+        
+        # Supprimer les lapins de cet élevage
+        Individu.objects.filter(elevage=elevage).delete()
+
+        # Supprimer l’élevage lui-même
+        elevage.delete()
+
+        # Redirection après suppression
+        return redirect('elevage:liste')
 
     return render(request, 'elevage/supprimer_elevage.html', {'elevage': elevage})
 
