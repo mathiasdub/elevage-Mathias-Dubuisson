@@ -70,31 +70,35 @@
   </div>
 </div>
 
+<!-- Chargement de Chart.js depuis un CDN-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+// Récupération des données JSON concernant l'élevage
 fetch("/datas/{{ elevage.id }}/")
   .then(response => response.json())
   .then(data => {
     console.log("Données reçues :", data);
 
+    // Génération des étiquettes pour l'axe X : "Tour 1", "Tour 2", etc.
     const labels = data.map(entry => `Tour ${entry.tour}`);
 
-    // Données pour la population
+    // Extraction des séries de données pour chaque indicateur
     const males = data.map(entry => entry.nb_males);
     const femelles = data.map(entry => entry.nb_femelles);
     const lapereaux = data.map(entry => entry.nb_lapereaux);
 
-    // Données pour les variations démographiques
     const naissances = data.map(entry => entry.naissances);
     const mortalites = data.map(entry => entry.morts);
     const ventes = data.map(entry => entry.ventes);
 
-    // Données pour les ressources
-    const nourritures = data.map(entry => entry.nourriture);  // Nourriture
-    const argents = data.map(entry => entry.argent);          // Argent
-    const cages = data.map(entry => entry.cages);           // Nombre de cages
+    const nourritures = data.map(entry => entry.nourriture);
+    const argents = data.map(entry => entry.argent);
+    const cages = data.map(entry => entry.cages);
 
-    // Graphe 1 : Population
+    // === Création des graphiques ===
+
+    // Graphe 1 : Évolution de la population
     new Chart(document.getElementById('populationChart'), {
       type: 'line',
       data: {
@@ -110,15 +114,13 @@ fetch("/datas/{{ elevage.id }}/")
         scales: {
           y: { 
             beginAtZero: true,
-            grid: {
-              color: '#807b7a',  // Ligne de grille grise claire
-            } 
+            grid: { color: '#807b7a' } // Grille grise claire
           }
         }
       }
     });
 
-    // Graphe 2 : Naissances / Mortalités
+    // Graphe 2 : Naissances, mortalités et ventes par tour
     new Chart(document.getElementById('birthDeathChart'), {
       type: 'bar',
       data: {
@@ -132,15 +134,15 @@ fetch("/datas/{{ elevage.id }}/")
       options: {
         responsive: true,
         scales: {
-          y: { beginAtZero: true,
-            grid: {
-              color: '#807b7a',  // Ligne de grille grise claire
-            }  }
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
         }
       }
     });
 
-    // Graphe 3 : Nourriture disponible
+    // Graphe 3 : Nourriture disponible au fil du temps
     new Chart(document.getElementById('nourritureChart'), {
       type: 'line',
       data: {
@@ -156,15 +158,15 @@ fetch("/datas/{{ elevage.id }}/")
       options: {
         responsive: true,
         scales: {
-          y: { beginAtZero: true,
-            grid: {
-              color: '#807b7a',  // Ligne de grille grise claire
-            }  }
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
         }
       }
     });
 
-    // Graphe 4 : Argent
+    // Graphe 4 : Évolution de l'argent disponible
     new Chart(document.getElementById('argentChart'), {
       type: 'line',
       data: {
@@ -180,15 +182,15 @@ fetch("/datas/{{ elevage.id }}/")
       options: {
         responsive: true,
         scales: {
-          y: { beginAtZero: true,
-            grid: {
-              color: '#807b7a',  // Ligne de grille grise claire
-            }  }
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
         }
       }
     });
 
-    // Graphe 5 : Nombre de cages
+    // Graphe 5 : Nombre de cages disponibles
     new Chart(document.getElementById('cagesChart'), {
       type: 'line',
       data: {
@@ -204,17 +206,17 @@ fetch("/datas/{{ elevage.id }}/")
       options: {
         responsive: true,
         scales: {
-          y: { beginAtZero: true,
-            grid: {
-              color: '#807b7a',  // Ligne de grille grise claire
-            }  }
+          y: { 
+            beginAtZero: true,
+            grid: { color: '#807b7a' }
+          }
         }
       }
     });
 
-    // Graphe 6 : Détail actuel de l'élevage 
-    const lastEntry = data[data.length - 1];
-  
+    // Graphe 6 : Répartition actuelle (mâles, femelles, lapereaux) sous forme de camembert
+    const lastEntry = data[data.length - 1]; // Dernier état de l'élevage
+
     const currentDetailData = {
       labels: ['Mâles', 'Femelles', 'Lapereaux'],
       datasets: [{
@@ -249,6 +251,7 @@ fetch("/datas/{{ elevage.id }}/")
     });
   });
 </script>
+
 </fieldset>
 
     
