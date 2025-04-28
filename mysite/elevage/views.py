@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.contrib import messages
-
+from django.contrib.auth.models import Group
 from .models import Elevage, Individu, Regle, ElevageDatas
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.contrib.auth.forms import UserCreationForm
@@ -28,12 +28,12 @@ def menu(request):
 # Vue pour créer un nouvel élevage
 @login_required
 def nouveau(request):
-    """user = request.user
+    user = request.user
     # Vérifier l'appartenance à un groupe
-    is_basic = user.groups.filter(name='basic').exists()
+    is_premium = user.groups.filter(name='premium').exists()
 
     # Si l'utilisateur est dans le groupe "basic", on limite le nombre d'élevages à 3
-    if is_basic:
+    if not is_premium:
         max_elevages = 3
     else:
         max_elevages = float('inf')  # Pas de limite pour les premium
@@ -45,7 +45,7 @@ def nouveau(request):
         return render(request, 'elevage/liste.html', {
             'message': "Vous avez atteint le nombre d'élevages autorisés.",
             'elevages': Elevage.objects.filter(user=user),
-        })"""
+        })
     if 'nombre_lapins' not in request.session:
         # demander combien de lapins on veut créer
         if request.method == 'POST':
@@ -179,3 +179,23 @@ def supprimer_elevage(request, elevage_id):
 def get_datas(request, elevage_id):
     data = list(ElevageDatas.objects.filter(elevage_id=elevage_id).order_by("tour").values())
     return JsonResponse(data, safe=False)
+
+@login_required
+def paiement(request):
+    # Vérifier si l'utilisateur est déjà premium
+    if request.user.groups.filter(name='premium').exists():
+        messages.info(request, "Vous êtes déjà un membre Premium !")
+        return redirect('elevage:menu')  # Redirige vers le menu du jeu
+
+    if request.method == 'POST':
+        # Simuler un paiement réussi (par exemple, une validation de paiement)
+        groupe_premium = Group.objects.get(name='premium')
+        
+        # Ajouter l'utilisateur au groupe "premium"
+        request.user.groups.add(groupe_premium)
+        request.user.save()
+
+        messages.success(request, "Vous êtes maintenant un membre Premium !")
+        return redirect('elevage:menu')  # Redirige vers la page principale de l'application
+
+    return render(request, 'elevage/paiement.html')

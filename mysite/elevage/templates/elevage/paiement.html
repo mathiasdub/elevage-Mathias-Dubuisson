@@ -1,0 +1,20 @@
+{% extends 'elevage/base.html' %}
+
+{% block content %}
+  <h2>Paiement pour le statut Premium</h2>
+
+  <p>Payez pour devenir un membre Premium et débloquez des fonctionnalités exclusives.</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit">Payer maintenant</button>
+  </form>
+
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

@@ -4,6 +4,11 @@
 
 {% block content %}
 
+{% if message %}
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+{% endif %}
 <h1>liste des élevages :</h1>
 <div class="list">
     {% for raising in elevages %}
