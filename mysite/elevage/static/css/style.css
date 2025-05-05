@@ -17,20 +17,6 @@ textarea {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .messages-container {
     text-align: center;
     margin-top: 20px;
@@ -62,7 +48,7 @@ textarea {
 
 
 
-/*
+
 body {
     font-family: 'Share Tech Mono', monospace;
     background-color: #000;        
@@ -70,7 +56,7 @@ body {
     margin: 0;
     padding: 20px;
 }
-    */
+    
 
 
 a {
