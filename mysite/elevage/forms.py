@@ -4,6 +4,9 @@ from .models import Elevage, Individu
 
 # Formulaire de création d'un élevage
 class ElevageForm(forms.ModelForm):
+    nb_males = forms.IntegerField(min_value=0, required=True, label="Nombre de lapins mâles")
+    nb_femelles = forms.IntegerField(min_value=0, required=True, label="Nombre de lapins femelles")
+
     class Meta:
         model = Elevage  
         fields = ['name', 'qt_nourriture', 'nb_cages', 'argent']  # Champs à afficher dans le formulaire

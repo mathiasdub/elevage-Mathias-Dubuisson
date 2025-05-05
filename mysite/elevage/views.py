@@ -30,50 +30,55 @@ def menu(request):
 # Vue pour créer un nouvel élevage
 @login_required
 def nouveau(request):
-    if 'nombre_lapins' not in request.session:
-        # demander combien de lapins on veut créer
-        if request.method == 'POST':
-            choix_form = ChoixNombreLapinsForm(request.POST)
-            if choix_form.is_valid():
-                request.session['nombre_lapins'] = choix_form.cleaned_data['nombre_lapins']
-                return redirect('elevage:nouveau')
-        else:
-            choix_form = ChoixNombreLapinsForm()
-        return render(request, 'elevage/choix_nombre_lapins.html', {'form': choix_form})
-
-    # création du formulaire d’élevage + formulaire pour chaque lapin
-    LapinFormSet = modelformset_factory(Individu, form=LapinForm, extra=request.session['nombre_lapins'])
-
     if request.method == 'POST':
-        elevage_form = ElevageForm(request.POST)
-        lapin_formset = LapinFormSet(request.POST, queryset=Individu.objects.none())
-        if elevage_form.is_valid() and lapin_formset.is_valid():
-            elevage = elevage_form.save(commit=False)  # Créer l’objet sans le sauvegarder
-            elevage.user = request.user  # Lier l’utilisateur après la création
-            elevage.save()  # Sauvegarder l’élevage
-            
-            for form in lapin_formset:     # Création et sauvegarde des lapins liés
-                lapin = form.save(commit=False)
-                lapin.elevage = elevage
-                lapin.save()
+        form = ElevageForm(request.POST)
+        if form.is_valid():
+            # Créer l'élevage
+            elevage = form.save(commit=False)
+            elevage.user = request.user
+            elevage.save()
+
+            # Récupérer le nombre de mâles et femelles
+            nb_males = form.cleaned_data['nb_males']
+            nb_femelles = form.cleaned_data['nb_femelles']
+
+            # Créer les lapins mâles
+            for _ in range(nb_males):
+                lapin = Individu.objects.create(
+                    elevage=elevage,
+                    age=6,  # Âge par défaut
+                    sexe='m',
+                    etat='présent',
+                )
                 sante = Sante.objects.create(
                     niveau_sante=100,
                     malade=False,
                 )
                 sante.individu = lapin
                 sante.save()
-                
-            del request.session['nombre_lapins']  
+                lapin.save()
+
+            # Créer les lapins femelles
+            for _ in range(nb_femelles):
+                lapin = Individu.objects.create(
+                    elevage=elevage,
+                    age=6,  # Âge par défaut
+                    sexe='f',
+                    etat='présent',
+                )
+                sante = Sante.objects.create(
+                    niveau_sante=100,
+                    malade=False,
+                )
+                sante.individu = lapin
+                sante.save()
+                lapin.save()
+
             return redirect('elevage:detail', elevage_id=elevage.id)
     else:
-        elevage_form = ElevageForm()
-        lapin_formset = LapinFormSet(queryset=Individu.objects.none())
+        form = ElevageForm()
 
-    return render(request, 'elevage/nouveau.html', {
-        'elevage_form': elevage_form,
-        'lapin_formset': lapin_formset,
-    })
-
+    return render(request, 'elevage/nouveau.html', {'form': form})
 
 
 # Vue qui affiche la liste des élevages
