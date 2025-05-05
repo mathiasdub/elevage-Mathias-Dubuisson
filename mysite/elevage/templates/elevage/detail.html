@@ -94,6 +94,11 @@
     <canvas id="cagesChart" width="600" height="400"></canvas>
   </div>
 
+  <!-- Graphique Maladies -->
+<div style="width: 600px;">
+  <h3 style="text-align: center;">Nombre de lapins malades</h3>
+  <canvas id="maladesChart" width="600" height="400"></canvas>
+</div>
 
   <!-- Graphe Détail actuel de l'élevage -->
   <div style="width: 600px;">
@@ -122,6 +127,8 @@ fetch("/datas/{{ elevage.id }}/")
     const naissances = data.map(entry => entry.naissances);
     const mortalites = data.map(entry => entry.morts);
     const ventes = data.map(entry => entry.ventes);
+
+    const malades = data.map(entry => entry.malades);
 
     const nourritures = data.map(entry => entry.nourriture);
     const argents = data.map(entry => entry.argent);
@@ -244,6 +251,30 @@ fetch("/datas/{{ elevage.id }}/")
         }
       }
     });
+
+
+    // Graphe 7 : Nombre de lapins malades
+      new Chart(document.getElementById('maladesChart'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Lapins malades',
+            data: malades,
+            backgroundColor: 'darkred'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#807b7a' }
+            }
+          }
+        }
+      });
+
 
     // Graphe 6 : Répartition actuelle (mâles, femelles, lapereaux) sous forme de camembert
     const lastEntry = data[data.length - 1]; // Dernier état de l'élevage

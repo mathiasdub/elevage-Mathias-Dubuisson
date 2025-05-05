@@ -136,6 +136,8 @@ class Elevage(models.Model):
             nb_femelles=self.individus.filter(sexe='f', etat__in=['présent', 'gravide'], age__gte=3).count(),
             nb_lapereaux=self.individus.filter(age__lte=2, etat='présent').count(),
             
+            malades=self.individus.filter(sante__malade=True).count(),
+            
             naissances=nb_naissances,
             morts=len(morts),
             ventes=len(lapins_vendus),
@@ -296,6 +298,7 @@ class ElevageDatas(models.Model):
     naissances = models.IntegerField()
     morts = models.IntegerField()
     ventes = models.IntegerField()
+    malades = models.IntegerField()
     
     # ressources
     argent = models.IntegerField()
