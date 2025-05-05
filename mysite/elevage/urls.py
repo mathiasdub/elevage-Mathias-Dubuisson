@@ -17,5 +17,6 @@ urlpatterns = [
     path("datas/<int:elevage_id>/", views.get_datas, name="get_datas"),
     path('accounts/', include('django.contrib.auth.urls')),
     path('signup/', views.signup, name='signup'),
-    path('paiement/', views.paiement, name='paiement')
+    path('paiement/', views.paiement, name='paiement'),
+    path("elevage/<int:elevage_id>/restaurer/<int:tour>/", views.restaurer_tour, name="restaurer_tour")
 ]

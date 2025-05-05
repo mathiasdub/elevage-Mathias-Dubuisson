@@ -2,6 +2,15 @@
 
 {% block title %} {{ elevage.name }} {% endblock %}
 
+
+{% if messages %}
+    <ul>
+    {% for message in messages %}
+        <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
 {% block head %}
 <style>
   .messages-container {
@@ -296,8 +305,21 @@ fetch("/datas/{{ elevage.id }}/")
             {{ form.as_table }}
         </table>
         <button type="submit">Valider le tour</button>
+
+
     </form>
 
+    <h3>Historique des tours</h3>
+    <ul>
+      {% for data in elevage.elevagedatas_set.all|dictsortreversed:"tour" %}
+        <li>
+          Tour {{ data.tour }} – 
+          <a href="{% url 'elevage:restaurer_tour' elevage.id data.tour %}">[Restaurer]</a>
+        </li>
+      {% endfor %}
+    </ul>
+    
+    
   
     <div class="messages-container">
       {% if messages %}

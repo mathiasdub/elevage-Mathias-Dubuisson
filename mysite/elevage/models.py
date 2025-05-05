@@ -2,7 +2,6 @@ from django.db import models
 import random
 from django.contrib.auth.models import User
 
-
 # Modèle représentant un élevage de lapins
 class Elevage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -117,7 +116,7 @@ class Elevage(models.Model):
                 
                 
         #----- Ajout des données du tour dans l'historique des états de l'élevage -----#
-        ElevageDatas.objects.create(
+        data=ElevageDatas.objects.create(
             elevage=self,
             tour=self.tour,
             
@@ -134,6 +133,43 @@ class Elevage(models.Model):
             cages=self.nb_cages,
         )
 
+
+        # Création snapshot individus
+        for individu in self.individus.all():
+            IndividuSnapshot.objects.create(
+                elevage_data=data,
+                sexe=individu.sexe,
+                age=individu.age,
+                etat=individu.etat
+            )
+
+    def restaurer_tour(self, tour_cible):
+        try:
+            snapshot = ElevageDatas.objects.get(elevage=self, tour=tour_cible)
+        except ElevageDatas.DoesNotExist:
+            raise ValueError("Tour à restaurer introuvable")
+
+        # Supprimer les individus actuels
+        self.individus.all().delete()
+
+        # Restaurer les individus
+        for snap in snapshot.individus_snapshots.all():
+            Individu.objects.create(
+                elevage=self,
+                sexe=snap.sexe,
+                age=snap.age,
+                etat=snap.etat
+            )
+
+        # Restaurer ressources
+        self.argent = snapshot.argent
+        self.qt_nourriture = snapshot.nourriture
+        self.nb_cages = snapshot.cages
+        self.tour = snapshot.tour
+        self.save()
+
+        # Supprimer les tours suivants
+        ElevageDatas.objects.filter(elevage=self, tour__gt=tour_cible).delete()
 
     def __str__(self):
         return self.name  # Représentation texte de l’élevage
@@ -212,3 +248,9 @@ class ElevageDatas(models.Model):
 
     # date de la sauvegarde
     date = models.DateTimeField(auto_now_add=True)
+
+class IndividuSnapshot(models.Model):
+    elevage_data = models.ForeignKey(ElevageDatas, on_delete=models.CASCADE, related_name="individus_snapshots")
+    sexe = models.CharField(max_length=1, choices=Individu.SEXE_CHOICES)
+    age = models.PositiveIntegerField()
+    etat = models.CharField(max_length=10, choices=Individu.ETAT_CHOICES)

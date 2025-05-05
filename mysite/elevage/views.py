@@ -3,7 +3,7 @@ from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.models import Group
-from .models import Elevage, Individu, Regle, ElevageDatas
+from .models import Elevage, Individu, Regle, ElevageDatas, IndividuSnapshot
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -67,11 +67,30 @@ def nouveau(request):
             elevage = elevage_form.save(commit=False)  # Créer l’objet sans le sauvegarder
             elevage.user = request.user  # Lier l’utilisateur après la création
             elevage.save()  # Sauvegarder l’élevage
-            
+            elevage_data = ElevageDatas.objects.create(
+                elevage=elevage,
+                tour=0,
+                nb_males=0,  # À ajuster en fonction des données des lapins créés
+                nb_femelles=0,  # À ajuster en fonction des données des lapins créés
+                nb_lapereaux=0,  # À ajuster en fonction des données des lapins créés
+                naissances=0,
+                morts=0,
+                ventes=0,
+                argent=elevage.argent,  # À ajuster en fonction des ressources disponibles
+                nourriture=elevage.qt_nourriture,  # À ajuster en fonction des ressources disponibles
+                cages=elevage.nb_cages  # À ajuster en fonction des ressources disponibles
+            )
             for form in lapin_formset:     # Création et sauvegarde des lapins liés
                 lapin = form.save(commit=False)
                 lapin.elevage = elevage
                 lapin.save()
+                # Création de snapshot pour chaque individu
+                IndividuSnapshot.objects.create(
+                    elevage_data=elevage_data,
+                    sexe=lapin.sexe,
+                    age=lapin.age,
+                    etat=lapin.etat
+                )
             del request.session['nombre_lapins']  
             return redirect('elevage:detail', elevage_id=elevage.id)
     else:
@@ -199,3 +218,15 @@ def paiement(request):
         return redirect('elevage:menu')  # Redirige vers la page principale de l'application
 
     return render(request, 'elevage/paiement.html')
+
+@login_required
+def restaurer_tour(request, elevage_id, tour):
+    elevage = get_object_or_404(Elevage, id=elevage_id, user=request.user)
+
+    try:
+        elevage.restaurer_tour(tour)
+        messages.success(request, f"Tour {tour} restauré avec succès.")
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    return redirect('elevage:detail', elevage_id=elevage.id)
