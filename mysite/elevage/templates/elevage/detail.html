@@ -3,13 +3,6 @@
 {% block title %} {{ elevage.name }} {% endblock %}
 
 
-{% if messages %}
-    <ul>
-    {% for message in messages %}
-        <li class="alert alert-{{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
 
 {% block head %}
 <style>
@@ -325,7 +318,8 @@ fetch("/datas/{{ elevage.id }}/")
       {% if messages %}
         {% for message in messages %}
           <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-            {{ message }}
+            {{ message|safe }}
+
           </div>
         {% endfor %}
       {% endif %}

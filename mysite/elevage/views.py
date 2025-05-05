@@ -7,7 +7,7 @@ from .models import Elevage, Individu, Regle, ElevageDatas, IndividuSnapshot
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-
+from django.urls import reverse
 
 
     
@@ -222,6 +222,16 @@ def paiement(request):
 @login_required
 def restaurer_tour(request, elevage_id, tour):
     elevage = get_object_or_404(Elevage, id=elevage_id, user=request.user)
+    
+    is_premium = request.user.groups.filter(name='premium').exists()
+    if not is_premium:
+        lien_paiement = reverse('elevage:paiement')  # Assure-toi que le nom de ta vue "paiement" est bien 'elevage:paiement'
+        messages.error(
+            request,
+            f"La restauration de tours est réservée aux membres premium. "
+            f"<a href='{lien_paiement}' style='color: #cc0000; text-decoration: underline;'>Devenir premium</a>"
+        )
+        return redirect('elevage:detail', elevage_id=elevage_id)
 
     try:
         elevage.restaurer_tour(tour)
