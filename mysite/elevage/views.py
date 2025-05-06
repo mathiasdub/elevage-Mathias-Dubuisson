@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from .models import Elevage, Individu, Regle, Sante
+from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.contrib import messages
@@ -78,7 +80,8 @@ def nouveau(request):
                 ventes=0,
                 argent=elevage.argent,  # À ajuster en fonction des ressources disponibles
                 nourriture=elevage.qt_nourriture,  # À ajuster en fonction des ressources disponibles
-                cages=elevage.nb_cages  # À ajuster en fonction des ressources disponibles
+                cages=elevage.nb_cages,  # À ajuster en fonction des ressources disponibles
+                malades=0
             )
             for form in lapin_formset:     # Création et sauvegarde des lapins liés
                 lapin = form.save(commit=False)
@@ -91,6 +94,13 @@ def nouveau(request):
                     age=lapin.age,
                     etat=lapin.etat
                 )
+                sante = Sante.objects.create(
+                    niveau_sante=100,
+                    malade=False,
+                )
+                sante.individu = lapin
+                sante.save()
+                
             del request.session['nombre_lapins']  
             return redirect('elevage:detail', elevage_id=elevage.id)
     else:
@@ -125,19 +135,17 @@ def detail(request, elevage_id):
             lapins_vendus = form.cleaned_data['lapins_a_vendre']
             nourriture = form.cleaned_data['nourriture_achetee']
             cages = form.cleaned_data['cages_achetees']
+            depenses_sante = form.cleaned_data['depenses_sante']
 
 
 
 
             try:
-                elevage.avancer_tour(nourriture, cages, lapins_vendus)
+                elevage.avancer_tour(nourriture, cages, lapins_vendus, depenses_sante)
                 messages.success(request, "Le tour a été avancé avec succès !")
             except ValueError as e:
                 messages.error(request, str(e))  # On affiche l'erreur remontée par avancer_tour
                 
-            # Fait avancer le jeu d’un tour
-            #elevage.avancer_tour(nourriture, cages, lapins_vendus)
-            
     else:
         form = ActionsForm(elevage=elevage)
         form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
@@ -225,7 +233,7 @@ def restaurer_tour(request, elevage_id, tour):
     
     is_premium = request.user.groups.filter(name='premium').exists()
     if not is_premium:
-        lien_paiement = reverse('elevage:paiement')  # Assure-toi que le nom de ta vue "paiement" est bien 'elevage:paiement'
+        lien_paiement = reverse('elevage:paiement')  
         messages.error(
             request,
             f"La restauration de tours est réservée aux membres premium. "

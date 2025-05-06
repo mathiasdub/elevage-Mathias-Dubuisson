@@ -59,6 +59,8 @@ class ActionsForm(forms.Form):
 
     # Champ pour acheter des cages
     cages_achetees = forms.IntegerField(min_value=0, required=True, label="Cages achetées")
+    
+    depenses_sante = forms.IntegerField(min_value=0, required=True, label="Dépenses santé (€)")
 
     # Champ pour sélectionner plusieurs lapins à vendre
     lapins_a_vendre = forms.ModelMultipleChoiceField(
