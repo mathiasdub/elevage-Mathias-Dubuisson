@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Elevage, Individu, Regle, Sante
-from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
+from .forms import ElevageForm, ActionsForm
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.models import Group
 from .models import Elevage, Individu, Regle, ElevageDatas, IndividuSnapshot
-from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
+from .forms import ElevageForm, ActionsForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
