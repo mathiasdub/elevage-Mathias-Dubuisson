@@ -9,6 +9,9 @@
     <a href="{% url 'elevage:nouveau' %}" class="menu-button">Nouvel Elevage</a> 
     <a href="{% url 'elevage:liste' %}" class="menu-button">Voir tous les Elevages</a> 
     <a href="{% url 'elevage:regles' %}" class="menu-button">Voir les règles du jeu</a> 
+    {% if not is_premium %}
+    <a href="{% url 'elevage:paiement' %}" class="menu-button">Devenir premium </a> 
+    {% endif %}
 </div>
 
 <br><br><br>

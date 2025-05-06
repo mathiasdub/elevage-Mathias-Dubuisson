@@ -25,6 +25,7 @@ def signup(request):
 
 @login_required
 def menu(request):
+    is_premium = request.user.groups.filter(name='premium').exists()
     return render(request, "elevage/menu.html")  # Affiche la page d’accueil du jeu
 
 # Vue pour créer un nouvel élevage
