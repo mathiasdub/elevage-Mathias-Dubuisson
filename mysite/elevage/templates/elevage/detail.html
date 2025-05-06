@@ -2,6 +2,8 @@
 
 {% block title %} {{ elevage.name }} {% endblock %}
 
+
+
 {% block head %}
 <style>
   .messages-container {
@@ -94,6 +96,11 @@
     <canvas id="cagesChart" width="600" height="400"></canvas>
   </div>
 
+  <!-- Graphique Maladies -->
+<div style="width: 600px;">
+  <h3 style="text-align: center;">Nombre de lapins malades</h3>
+  <canvas id="maladesChart" width="600" height="400"></canvas>
+</div>
 
   <!-- Graphe Détail actuel de l'élevage -->
   <div style="width: 600px;">
@@ -122,6 +129,8 @@ fetch("/datas/{{ elevage.id }}/")
     const naissances = data.map(entry => entry.naissances);
     const mortalites = data.map(entry => entry.morts);
     const ventes = data.map(entry => entry.ventes);
+
+    const malades = data.map(entry => entry.malades);
 
     const nourritures = data.map(entry => entry.nourriture);
     const argents = data.map(entry => entry.argent);
@@ -245,6 +254,30 @@ fetch("/datas/{{ elevage.id }}/")
       }
     });
 
+
+    // Graphe 7 : Nombre de lapins malades
+      new Chart(document.getElementById('maladesChart'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Lapins malades',
+            data: malades,
+            backgroundColor: 'darkred'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#807b7a' }
+            }
+          }
+        }
+      });
+
+
     // Graphe 6 : Répartition actuelle (mâles, femelles, lapereaux) sous forme de camembert
     const lastEntry = data[data.length - 1]; // Dernier état de l'élevage
 
@@ -296,14 +329,28 @@ fetch("/datas/{{ elevage.id }}/")
             {{ form.as_table }}
         </table>
         <button type="submit">Valider le tour</button>
+
+
     </form>
 
+    <h3>Historique des tours</h3>
+    <ul>
+      {% for data in elevage.elevagedatas_set.all|dictsortreversed:"tour" %}
+        <li>
+          Tour {{ data.tour }} – 
+          <a href="{% url 'elevage:restaurer_tour' elevage.id data.tour %}">[Restaurer]</a>
+        </li>
+      {% endfor %}
+    </ul>
+    
+    
   
     <div class="messages-container">
       {% if messages %}
         {% for message in messages %}
           <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-            {{ message }}
+            {{ message|safe }}
+
           </div>
         {% endfor %}
       {% endif %}
@@ -314,5 +361,5 @@ fetch("/datas/{{ elevage.id }}/")
     <p><a href="{% url 'elevage:regles' %}" target="_blank">Voir la liste des règles</a></p>
     <p><a href="{% url 'elevage:liste' %}">Voir la liste des élevages</a></p>
     <p><a href="{% url 'elevage:supprimer' elevage.id %}">Supprimer cet élevage</a></p>
-
+    <p><a href="{% url 'elevage:menu' %}">Retour au menu</a></p>
 {% endblock %}

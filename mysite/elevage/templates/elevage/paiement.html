@@ -1,0 +1,74 @@
+{% extends "elevage/base.html" %}
+
+{% block title %}Paiement Premium{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; text-align: center; border: 2px solid #ccc; padding: 30px; border-radius: 12px;">
+    <h1>Devenir membre Premium</h1>
+    <p style="margin-top: 20px;">
+        Le statut Premium vous permet de restaurer vos tours passés et de bénéficier de fonctionnalités avancées dans le jeu.
+    </p>
+    <p style="font-weight: bold; margin: 30px 0; font-size: 1.5em;">Tarif : 4,99 €</p>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label>Numéro de carte</label><br>
+            <input type="text" name="card_number" pattern="\d{16}" maxlength="16" placeholder="1234 5678 9012 3456" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+                <label>Date d'expiration</label><br>
+                <input type="text" name="expiry" pattern="\d{2}/\d{2}" maxlength="5" placeholder="MM/AA" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+            </div>
+            <div style="flex: 1;">
+                <label>CVV</label><br>
+                <input type="text" name="cvv" pattern="\d{3}" maxlength="3" placeholder="123" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px; text-align: left;">
+            <input type="checkbox" required> J'accepte les 
+            <a href="#" onclick="openModal(); return false;">conditions d'utilisation</a>.
+        </div>
+
+        <button type="submit" style="padding: 10px 30px; font-size: 1.2em; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Simuler le paiement
+        </button>
+    </form>
+
+    <p style="margin-top: 20px;"><a href="{% url 'elevage:menu' %}">Retour au menu</a></p>
+</div>
+
+<!-- Fenêtre modale -->
+<div id="conditionsModal" style="display:none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 10% auto; padding: 20px; border: 1px solid #888;
+         width: 80%; max-width: 600px; border-radius: 10px; position: relative;">
+        <h2>Conditions d'utilisation</h2>
+        <p>
+            Ceci est une simulation de paiement pour un jeu de gestion fictif.<br>
+            Aucun paiement réel ne sera effectué. Les données de carte saisies ne sont ni stockées ni transmises.<br><br>
+            En cochant cette case, vous acceptez :
+        </p>
+        <ul>
+            <li>D'utiliser cette plateforme à des fins uniquement ludiques.</li>
+            <li>Que votre compte soit promu Premium fictivement.</li>
+            <li>Qu'aucune transaction réelle ne soit initiée ni facturée.</li>
+        </ul>
+        <p>Merci de votre compréhension !</p>
+        <button onclick="closeModal()" style="margin-top: 20px; padding: 8px 20px; border: none; background-color: #4CAF50; color: white; border-radius: 5px;">Fermer</button>
+    </div>
+</div>
+
+<!-- Script JS -->
+<script>
+function openModal() {
+    document.getElementById("conditionsModal").style.display = "block";
+}
+function closeModal() {
+    document.getElementById("conditionsModal").style.display = "none";
+}
+</script>
+{% endblock %}

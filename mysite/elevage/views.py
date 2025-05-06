@@ -4,12 +4,12 @@ from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.contrib import messages
-
-from .models import Elevage, Individu, Regle, ElevageDatas
+from django.contrib.auth.models import Group
+from .models import Elevage, Individu, Regle, ElevageDatas, IndividuSnapshot
 from .forms import ElevageForm, LapinForm, ChoixNombreLapinsForm, ActionsForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-
+from django.urls import reverse
 
 
     
@@ -30,14 +30,33 @@ def menu(request):
 # Vue pour créer un nouvel élevage
 @login_required
 def nouveau(request):
+    user = request.user
+    # Vérifier l'appartenance à un groupe
+    is_premium = user.groups.filter(name='premium').exists()
+
+    # Si l'utilisateur est dans le groupe "basic", on limite le nombre d'élevages à 3
+    if not is_premium:
+        max_elevages = 3
+    else:
+        max_elevages = float('inf')  # Pas de limite pour les premium
+
+    # Vérifier le nombre d'élevages existants
+    elevages_existants = Elevage.objects.filter(user=user).count()
+
+    if elevages_existants >= max_elevages :
+        return render(request, 'elevage/liste.html', {
+            'message': "Vous avez atteint le nombre d'élevages autorisés.",
+            'elevages': Elevage.objects.filter(user=user),
+        })
+
+
     if request.method == 'POST':
         form = ElevageForm(request.POST)
         if form.is_valid():
-            # Créer l'élevage
-            elevage = form.save(commit=False)
-            elevage.user = request.user
-            elevage.save()
-
+            elevage = form.save(commit=False)  # Créer l’objet sans le sauvegarder
+            elevage.user = request.user  # Lier l’utilisateur après la création
+            elevage.save()  # Sauvegarder l’élevage
+            
             # Récupérer le nombre de mâles et femelles
             nb_males = form.cleaned_data['nb_males']
             nb_femelles = form.cleaned_data['nb_femelles']
@@ -57,6 +76,29 @@ def nouveau(request):
                 sante.individu = lapin
                 sante.save()
                 lapin.save()
+                
+                elevage_data = ElevageDatas.objects.create(
+                elevage=elevage,
+                tour=0,
+                nb_males=nb_males,  # À ajuster en fonction des données des lapins créés
+                nb_femelles=nb_femelles,  # À ajuster en fonction des données des lapins créés
+                nb_lapereaux=0,  # À ajuster en fonction des données des lapins créés
+                naissances=0,
+                morts=0,
+                ventes=0,
+                argent=elevage.argent,  # À ajuster en fonction des ressources disponibles
+                nourriture=elevage.qt_nourriture,  # À ajuster en fonction des ressources disponibles
+                cages=elevage.nb_cages,  # À ajuster en fonction des ressources disponibles
+                malades=0
+            )
+                
+                # Création de snapshot pour chaque individu
+                IndividuSnapshot.objects.create(
+                    elevage_data=elevage_data,
+                    sexe=lapin.sexe,
+                    age=lapin.age,
+                    etat=lapin.etat
+                )
 
             # Créer les lapins femelles
             for _ in range(nb_femelles):
@@ -73,6 +115,8 @@ def nouveau(request):
                 sante.individu = lapin
                 sante.save()
                 lapin.save()
+            
+            
 
             return redirect('elevage:detail', elevage_id=elevage.id)
     else:
@@ -113,8 +157,6 @@ def detail(request, elevage_id):
             except ValueError as e:
                 messages.error(request, str(e))  # On affiche l'erreur remontée par avancer_tour
                 
-            # Fait avancer le jeu d’un tour
-            elevage.avancer_tour(nourriture, cages, lapins_vendus,depenses_sante)
     else:
         form = ActionsForm(elevage=elevage)
         form.fields['lapins_a_vendre'].queryset = elevage.individus.filter(etat__in=['présent', 'gravide'])
@@ -175,3 +217,45 @@ def supprimer_elevage(request, elevage_id):
 def get_datas(request, elevage_id):
     data = list(ElevageDatas.objects.filter(elevage_id=elevage_id).order_by("tour").values())
     return JsonResponse(data, safe=False)
+
+@login_required
+def paiement(request):
+    # Vérifier si l'utilisateur est déjà premium
+    if request.user.groups.filter(name='premium').exists():
+        messages.info(request, "Vous êtes déjà un membre Premium !")
+        return redirect('elevage:menu')  # Redirige vers le menu du jeu
+
+    if request.method == 'POST':
+        # Simuler un paiement réussi (par exemple, une validation de paiement)
+        groupe_premium = Group.objects.get(name='premium')
+        
+        # Ajouter l'utilisateur au groupe "premium"
+        request.user.groups.add(groupe_premium)
+        request.user.save()
+
+        messages.success(request, "Vous êtes maintenant un membre Premium !")
+        return redirect('elevage:menu')  # Redirige vers la page principale de l'application
+
+    return render(request, 'elevage/paiement.html')
+
+@login_required
+def restaurer_tour(request, elevage_id, tour):
+    elevage = get_object_or_404(Elevage, id=elevage_id, user=request.user)
+    
+    is_premium = request.user.groups.filter(name='premium').exists()
+    if not is_premium:
+        lien_paiement = reverse('elevage:paiement')  
+        messages.error(
+            request,
+            f"La restauration de tours est réservée aux membres premium. "
+            f"<a href='{lien_paiement}' style='color: #cc0000; text-decoration: underline;'>Devenir premium</a>"
+        )
+        return redirect('elevage:detail', elevage_id=elevage_id)
+
+    try:
+        elevage.restaurer_tour(tour)
+        messages.success(request, f"Tour {tour} restauré avec succès.")
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    return redirect('elevage:detail', elevage_id=elevage.id)

@@ -2,7 +2,6 @@ from django.db import models
 import random
 from django.contrib.auth.models import User
 
-
 # Modèle représentant un élevage de lapins
 class Elevage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -17,7 +16,8 @@ class Elevage(models.Model):
         #----- Vérification de la capacité d'achat -----#
         cout_total = (
             nourriture_achetee * Regle.PRIX_NOURRITURE_PAR_KG +
-            cages_achetees * Regle.PRIX_CAGE
+            cages_achetees * Regle.PRIX_CAGE +
+            depenses_sante
         )
 
         if self.argent < cout_total:
@@ -127,13 +127,15 @@ class Elevage(models.Model):
                 
                 
         #----- Ajout des données du tour dans l'historique des états de l'élevage -----#
-        ElevageDatas.objects.create(
+        data=ElevageDatas.objects.create(
             elevage=self,
             tour=self.tour,
             
             nb_males=self.individus.filter(sexe='m', etat='présent', age__gte=3).count(),
             nb_femelles=self.individus.filter(sexe='f', etat__in=['présent', 'gravide'], age__gte=3).count(),
             nb_lapereaux=self.individus.filter(age__lte=2, etat='présent').count(),
+            
+            malades=self.individus.filter(sante__malade=True).count(),
             
             naissances=nb_naissances,
             morts=len(morts),
@@ -144,6 +146,51 @@ class Elevage(models.Model):
             cages=self.nb_cages,
         )
 
+
+        # Création snapshot individus
+        for individu in self.individus.all():
+            sante = individu.sante.first()
+            IndividuSnapshot.objects.create(
+                elevage_data=data,
+                sexe=individu.sexe,
+                age=individu.age,
+                etat=individu.etat,
+                niveau_sante=sante.niveau_sante,
+                malade=sante.malade
+                )
+
+    def restaurer_tour(self, tour_cible):
+        try:
+            snapshot = ElevageDatas.objects.get(elevage=self, tour=tour_cible)
+        except ElevageDatas.DoesNotExist:
+            raise ValueError("Tour à restaurer introuvable")
+
+        # Supprimer les individus actuels
+        self.individus.all().delete()
+
+        # Restaurer les individus
+        for snap in snapshot.individus_snapshots.all():
+            individu = Individu.objects.create(
+                elevage=self,
+                sexe=snap.sexe,
+                age=snap.age,
+                etat=snap.etat
+            )
+            Sante.objects.create(
+                individu=individu,
+                niveau_sante=snap.niveau_sante,
+                malade=snap.malade
+            )
+
+        # Restaurer ressources
+        self.argent = snapshot.argent
+        self.qt_nourriture = snapshot.nourriture
+        self.nb_cages = snapshot.cages
+        self.tour = snapshot.tour
+        self.save()
+
+        # Supprimer les tours suivants
+        ElevageDatas.objects.filter(elevage=self, tour__gt=tour_cible).delete()
 
     def __str__(self):
         return self.name  # Représentation texte de l’élevage
@@ -197,6 +244,7 @@ class Regle:
     # Mort par vieillesse
     DUREE_VIE_MAX = 96                 # Âge à partir duquel le lapin peut mourir de viellesse 
     PROBA_MORT_VIEUX = 0.1             # Proba du lapin de mourir de vieillesse une fois l'âge requis dépassé
+
 
 class Sante(models.Model):
     individu = models.ForeignKey(Individu, on_delete=models.CASCADE, related_name='sante',null=True)  # Référence à l’individu
@@ -294,6 +342,7 @@ class ElevageDatas(models.Model):
     naissances = models.IntegerField()
     morts = models.IntegerField()
     ventes = models.IntegerField()
+    malades = models.IntegerField()
     
     # ressources
     argent = models.IntegerField()
@@ -302,3 +351,11 @@ class ElevageDatas(models.Model):
 
     # date de la sauvegarde
     date = models.DateTimeField(auto_now_add=True)
+
+class IndividuSnapshot(models.Model):
+    elevage_data = models.ForeignKey(ElevageDatas, on_delete=models.CASCADE, related_name="individus_snapshots")
+    sexe = models.CharField(max_length=1, choices=Individu.SEXE_CHOICES)
+    age = models.PositiveIntegerField()
+    etat = models.CharField(max_length=10, choices=Individu.ETAT_CHOICES)
+    niveau_sante = models.IntegerField(default=100)
+    malade = models.BooleanField(default=False)
