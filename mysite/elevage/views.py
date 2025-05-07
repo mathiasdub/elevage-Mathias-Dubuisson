@@ -116,7 +116,13 @@ def nouveau(request):
                 sante.individu = lapin
                 sante.save()
                 lapin.save()
-            
+                # Création de snapshot pour chaque individu
+                IndividuSnapshot.objects.create(
+                    elevage_data=elevage_data,
+                    sexe=lapin.sexe,
+                    age=lapin.age,
+                    etat=lapin.etat
+                )
             
 
             return redirect('elevage:detail', elevage_id=elevage.id)
