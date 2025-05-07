@@ -61,7 +61,20 @@ def nouveau(request):
             # Récupérer le nombre de mâles et femelles
             nb_males = form.cleaned_data['nb_males']
             nb_femelles = form.cleaned_data['nb_femelles']
-
+            elevage_data = ElevageDatas.objects.create(
+                elevage=elevage,
+                tour=0,
+                nb_males=nb_males,  # À ajuster en fonction des données des lapins créés
+                nb_femelles=nb_femelles,  # À ajuster en fonction des données des lapins créés
+                nb_lapereaux=0,  # À ajuster en fonction des données des lapins créés
+                naissances=0,
+                morts=0,
+                ventes=0,
+                argent=elevage.argent,  # À ajuster en fonction des ressources disponibles
+                nourriture=elevage.qt_nourriture,  # À ajuster en fonction des ressources disponibles
+                cages=elevage.nb_cages,  # À ajuster en fonction des ressources disponibles
+                malades=0
+            )
             # Créer les lapins mâles
             for _ in range(nb_males):
                 lapin = Individu.objects.create(
@@ -78,20 +91,7 @@ def nouveau(request):
                 sante.save()
                 lapin.save()
                 
-                elevage_data = ElevageDatas.objects.create(
-                elevage=elevage,
-                tour=0,
-                nb_males=nb_males,  # À ajuster en fonction des données des lapins créés
-                nb_femelles=nb_femelles,  # À ajuster en fonction des données des lapins créés
-                nb_lapereaux=0,  # À ajuster en fonction des données des lapins créés
-                naissances=0,
-                morts=0,
-                ventes=0,
-                argent=elevage.argent,  # À ajuster en fonction des ressources disponibles
-                nourriture=elevage.qt_nourriture,  # À ajuster en fonction des ressources disponibles
-                cages=elevage.nb_cages,  # À ajuster en fonction des ressources disponibles
-                malades=0
-            )
+                
                 
                 # Création de snapshot pour chaque individu
                 IndividuSnapshot.objects.create(
